@@ -1,0 +1,15 @@
+Group members:
+Abdallah Aboelela
+Ahmed Karkoura
+Scarla Pan
+
+Likely sources:
+Rotten Tomatoes (Scraping)
+Oscars - Nominations and winners (Scraping/csv?)
+IMDb data (csvs available but potentially won't use)
+
+What should users be able to do?
+1. Given actor(s)/duration/genre(s)/director, give highest rated movies
+2. Given movie, find similar movies
+3. SOMETHING TO DO WITH OSCARS
+4. 
