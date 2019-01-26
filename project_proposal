@@ -13,3 +13,9 @@ What should users be able to do?
 2. Given movie, find similar movies
 3. SOMETHING TO DO WITH OSCARS
 4. 
+
+Work required:
+1. Data collection (scraping where relevant, APIs otherwise)
+2. Building the recommender
+3. (OPTIONAL) Training model to predict box office/critics information, etc. (TBD by Tuesday)
+4. Building website/output
