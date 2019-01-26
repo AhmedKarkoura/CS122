@@ -12,7 +12,7 @@ What should users be able to do?
 1. Given actor(s)/duration/genre(s)/director, give highest rated movies
 2. Given movie, find similar movies
 3. SOMETHING TO DO WITH OSCARS
-4. 
+4. Potnetial ML predictor
 
 Work required:
 1. Data collection (scraping where relevant, APIs otherwise)
