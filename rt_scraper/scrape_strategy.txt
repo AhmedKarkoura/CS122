@@ -1,0 +1,59 @@
+Rotten tomatoes has a page where you can browse all movies. The link for this
+page is:
+    https://www.rottentomatoes.com/browse/dvd-streaming-all/
+
+However, this page only shows the first 32 of (as of this writing) 16,001 movies
+hosted on the website. Looking through the networks part of inspect elements,
+it looks like every time someone clicks show more, a request is sent with the
+url:
+    https://www.rottentomatoes.com/api/private/v2.0/browse?maxTomato=100&maxPopcorn=100&services=amazon;hbo_go;itunes;netflix_iw;vudu;amazon_prime;fandango_now&certified&sortBy=release&type=dvd-streaming-all&page=2
+
+Where the last integer of the URL is the number of the page. Following this 
+request returns a JSON file with 32 further movies, with information such as:
+    - title
+    - url (relative)
+    - tomato score (critic reviews aggregate)
+    - popcorn score (fan reviews aggregate)
+    - theater release date (no year)
+    - dvd release date (no year)
+    - runtime (in x h. xx min format)
+    - Three main actors
+    - mpaa rating
+    - synopsis
+
+Presumably, there should be 16,001 / 32 = 500 pages to request, but I've only
+been able to get as high as 312. Potentially there are pages where more than 32
+are being provided so that will need to be taken into account.
+
+Once we get the movie URL (and potentially some of the information from the 
+JSON file). We can visit and collect further:
+    - mpaa rating and reason for rating
+    - title
+    - expanded synopsis
+    - tomato score (critic reviews aggregate)
+    - popcorn score (fan reviews aggregate)
+    - Genre(s)
+    - Director(s)
+    - Writer(s)
+    - Release date (incl. year)
+    - Dvd release date (incl. year)
+    - box office
+    - Runtime in minutes
+    - Studio
+    - expaned cast
+
+The main differences are:
+    - movie URL has expanded synopsis vs. normal synopsis in JSON
+    - movie URL has studio, box office, writers, directors
+    - JSON has main three actors vs. entire cast in movie URL
+    - diff in formatting of runtime (see which we prefer, I think minutes)
+    - movie URL has reason for rating
+    - movie URL has dates including year
+
+Further questions:
+    - Should we collect information from actors and directors pages?
+        - highest and lowest rated movies
+        - birthday
+        - birthplace
+        - description
+        - list of movies, box office results, year
