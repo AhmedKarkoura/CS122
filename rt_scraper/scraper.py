@@ -49,12 +49,11 @@ def get_movie_links():
 
 MOVIE_DICT = get_movie_links()
 
-def all_movies_page_csv(start = 1, index_filename):
+def all_movies_page_csv(index_filename):
     with open(index_filename, 'w') as csvfile:
-    	writer = csv.writer(csvfile, delimiter = '|')
+        writer = csv.writer(csvfile, delimiter = '|')
 
-    	for movie_id, movie in MOVIE_DICT.items():
-    		actors = movie.get('actors')
-    		writer.writerow([movie_id, actors[0], actors[1], actors[2], 
-    						 movie.get('h_runtime'), movie.get(short_synopsis),
-    						 moive.get('title'), movie.get('relative_url')])
+        for movie_id, movie in MOVIE_DICT.items():
+            writer.writerow([movie_id, '/'.join(movie.get('actors')), 
+                             movie.get('h_runtime'), movie.get('short_synopsis'),
+                             movie.get('title'), movie.get('relative_url')])
