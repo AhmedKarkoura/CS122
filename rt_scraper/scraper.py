@@ -15,6 +15,7 @@ import queue
 import json
 import sys
 import csv
+import sqlite3
 
 def get_movie_links():
     '''
@@ -47,13 +48,43 @@ def get_movie_links():
 
     return movie_dict
 
-MOVIE_DICT = get_movie_links()
-
 def all_movies_page_csv(index_filename):
+    movie_dict = get_movie_links()
+
     with open(index_filename, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter = '|')
 
-        for movie_id, movie in MOVIE_DICT.items():
+        for movie_id, movie in movie_dict.items():
             writer.writerow([movie_id, '/'.join(movie.get('actors')), 
                              movie.get('h_runtime'), movie.get('short_synopsis'),
                              movie.get('title'), movie.get('relative_url')])
+
+def movie_level_data():
+    s = 'SELECT title, movie_id, url FROM all_movies_page'
+
+    db = sqlite3.connect('rotten_tomatoes.db')
+    
+    c = db.cursor()
+    r = c.execute(s)
+
+    urls = r.fetchall()
+
+    db.close()
+
+    movie_level_dict = {}
+
+    current_url= 'https://www.rottentomatoes.com/'
+
+    for title, movie_id, url in urls:
+        url = util.convert_if_relative_url(current_url, url)
+        
+        print(title, movie_id)
+
+        r = util.get_request('https://www.rottentomatoes.com/m/the_grinch')
+        print("gotten")
+        html = util.read_request(r) # THERE'S AN ISSUE HERE BUT I'M NOT SURE WHY
+        print("issue passed reading")
+        soup = bs4.BeautifulSoup(html, features = 'html5lib')
+        print("issue passed soup")
+
+        return soup
