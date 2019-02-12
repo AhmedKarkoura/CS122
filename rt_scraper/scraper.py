@@ -16,6 +16,7 @@ import json
 import sys
 import csv
 import sqlite3
+import urllib.request
 
 def get_movie_links():
     '''
@@ -80,11 +81,8 @@ def movie_level_data():
         
         print(title, movie_id)
 
-        r = util.get_request('https://www.rottentomatoes.com/m/the_grinch')
-        print("gotten")
-        html = util.read_request(r) # THERE'S AN ISSUE HERE BUT I'M NOT SURE WHY
-        print("issue passed reading")
+        r = urllib.request.urlopen(url)
+        html = r.read()
         soup = bs4.BeautifulSoup(html, features = 'html5lib')
-        print("issue passed soup")
 
         return soup
