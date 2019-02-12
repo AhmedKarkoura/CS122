@@ -10,6 +10,7 @@ The files are:
   
 # Issues
   - Number of movies scraped doens't match?  
+  - Can't read requests in movie_level_data . 
   
 # Still to do
   - use urls gained from main page scraping to scrape movie level data  
