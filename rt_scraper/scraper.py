@@ -62,7 +62,7 @@ def all_movies_page_csv(index_filename):
 
 def movie_level_data():
     s = 'SELECT title, movie_id, url FROM all_movies_page'
-    db = sqlite3.connect('rotten_tomatoes.db')
+    db = sqlite3.connect('sql_db_files/rotten_tomatoes.db')
     
     c = db.cursor()
     r = c.execute(s)
@@ -102,9 +102,9 @@ def movie_level_csv(index_filename):
                              movie.get('Genre:'),
                              movie.get('In Theaters:'),
                              movie.get('On Disc/Streaming:'),
-                             movie.get('Rating'),
-                             movie.get('Runtime'),
-                             movie.get('Studio'),
+                             movie.get('Rating:'),
+                             movie.get('Runtime:'),
+                             movie.get('Studio:'),
                              movie.get('Written By:'),
                              movie.get('full_synop')])
 
