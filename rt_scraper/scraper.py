@@ -75,7 +75,7 @@ def movie_level_data():
 
     current_url= 'https://www.rottentomatoes.com/'
     
-    i = 1
+    i = 1 # For keeping track of movie out of 9500-ish
     for title, movie_id, url in urls:
         url = util.convert_if_relative_url(current_url, url)
         
