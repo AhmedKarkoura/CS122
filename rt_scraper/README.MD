@@ -10,6 +10,7 @@ The files are:
   
 # Issues
   - Number of movies scraped doens't match?  
+  - Potentially blocking after 1051 movies for movie level data  
   
 # Still to do
   - decide on actor/director scraping
