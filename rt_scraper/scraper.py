@@ -75,14 +75,70 @@ def movie_level_data():
     movie_level_dict = {}
 
     current_url= 'https://www.rottentomatoes.com/'
-
+    
+    i = 1
     for title, movie_id, url in urls:
         url = util.convert_if_relative_url(current_url, url)
         
-        print(title, movie_id)
+        print(i, title, movie_id)
+        i += 1
 
         r = urllib.request.urlopen(url)
         html = r.read()
         soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
-        return soup
+        movie_level_dict[movie_id] = data_collector(soup)
+
+    return movie_level_dict
+
+def movie_level_csv(index_filename):
+    movie_dict = movie_level_data()
+
+    with open(index_filename, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter = '|')
+
+        for movie_id, movie in movie_dict.items():
+            writer.writerow([movie_id, 
+                             movie.get('Directed by:'),
+                             movie.get('Genre:'),
+                             movie.get('In Theaters:'),
+                             movie.get('On Disc/Streaming:'),
+                             movie.get('Rating'),
+                             movie.get('Runtime'),
+                             movie.get('Studio'),
+                             movie.get('Written By:'),
+                             movie.get('full_synop')])
+
+def data_collector(soup):
+    movie_info = {}
+
+    movie_info['full_synop'] = soup.find_all('div', 
+        class_ = "movie_synopsis")[0].text.strip()
+
+    tags = soup.find_all('li', class_ = 'meta-row clearfix')
+    for tag in tags:
+        divs = tag.find_all('div')
+
+        label = divs[0].text.strip()
+
+        value = divs[1]
+
+        links = value.find_all('a')
+        
+        if links:
+            s = ''
+            n = len(links)
+            for i, link in enumerate(links):
+                s += link.text + (', ' if i < n - 1 else '')
+
+        else:
+            s = value.text
+
+        movie_info[label] = s.strip()
+
+    return movie_info
+
+
+
+
+
