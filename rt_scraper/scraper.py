@@ -62,7 +62,6 @@ def all_movies_page_csv(index_filename):
 
 def movie_level_data():
     s = 'SELECT title, movie_id, url FROM all_movies_page'
-
     db = sqlite3.connect('rotten_tomatoes.db')
     
     c = db.cursor()
@@ -118,11 +117,8 @@ def data_collector(soup):
     tags = soup.find_all('li', class_ = 'meta-row clearfix')
     for tag in tags:
         divs = tag.find_all('div')
-
         label = divs[0].text.strip()
-
         value = divs[1]
-
         links = value.find_all('a')
         
         if links:
