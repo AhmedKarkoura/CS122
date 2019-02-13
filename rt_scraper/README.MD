@@ -10,8 +10,9 @@ The files are:
   
 # Issues
   - Number of movies scraped doens't match?  
-  - Can't read requests in movie_level_data . 
+  - Potentially blocking after 1051 movies for movie level data  
   
 # Still to do
-  - use urls gained from main page scraping to scrape movie level data  
-  - decide on actor/director scraping  
+  - decide on actor/director scraping
+  - Create and update movie_level_data table in rotten_tomatoes.db
+  - merge tables appropriately in rotten_tomatoes.db
