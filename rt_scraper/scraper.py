@@ -17,6 +17,7 @@ import sys
 import csv
 import sqlite3
 import urllib.request
+import time
 
 def get_movie_links():
     '''
@@ -29,9 +30,13 @@ def get_movie_links():
                  'netflix_iw;vudu;amazon_prime;fandango_now&certified&sortBy='
                  'release&type=dvd-streaming-all&page=')
 
-    for i in range(1, 312):
+    for i in range(312):
         r = util.get_request(start_url + str(i))
         result = r.json()
+
+        count = result.get('counts').get('count')
+        if count != 32:
+            print("HEY, THIS ONE IS DIFFERENT:", count)
 
         for movie in result.get('results'):
             new_movie = {}
@@ -60,43 +65,34 @@ def all_movies_page_csv(index_filename):
                              movie.get('h_runtime'), movie.get('short_synopsis'),
                              movie.get('title'), movie.get('relative_url')])
 
-def movie_level_data():
+def movie_level_data(index_filename, i = 0):
     s = 'SELECT title, movie_id, url FROM all_movies_page'
     db = sqlite3.connect('sql_db_files/rotten_tomatoes.db')
     
     c = db.cursor()
     r = c.execute(s)
 
-    urls = r.fetchall()
+    urls = r.fetchall()[i:]
 
     db.close()
 
-    movie_level_dict = {}
-
     current_url= 'https://www.rottentomatoes.com/'
-    
-    i = 1 # For keeping track of movie out of 9500-ish
-    for title, movie_id, url in urls:
-        url = util.convert_if_relative_url(current_url, url)
-        
-        print(i, title, movie_id)
-        i += 1
-
-        r = urllib.request.urlopen(url)
-        html = r.read()
-        soup = bs4.BeautifulSoup(html, features = 'html5lib')
-
-        movie_level_dict[movie_id] = data_collector(soup)
-
-    return movie_level_dict
-
-def movie_level_csv(index_filename):
-    movie_dict = movie_level_data()
 
     with open(index_filename, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter = '|')
+    
+        for title, movie_id, url in urls:
+            url = util.convert_if_relative_url(current_url, url)
+        
+            print(i, title, movie_id)
+            i += 1
 
-        for movie_id, movie in movie_dict.items():
+            r = url_request(url)
+            html = r.read()
+            soup = bs4.BeautifulSoup(html, features = 'html5lib')
+
+            movie = data_collector(soup)
+
             writer.writerow([movie_id, 
                              movie.get('Directed by:'),
                              movie.get('Genre:'),
@@ -134,7 +130,21 @@ def data_collector(soup):
 
     return movie_info
 
+N_MAX = 5
 
+def url_request(url, n = 1):
+    try:
+        r = urllib.request.urlopen(url)
 
+    except Exception as e:
+        print('Trying again: this is try ', n + 1)
+        if n <= N_MAX:
+            time.sleep(5)
+            r = url_request(url, n + 1)
 
+        else:
+            print('Failed')
+            raise e
+
+    return r
 
