@@ -48,7 +48,7 @@ def get_nominees(url):
             if row.th:
                 year = row.th.find_all('a')[0].text  
             nomination_info.append(year)
-            nomination_info.append(award)
+            nomination_info.append(award.upper())
             row_info = row.find_all('td')
             if row_info:
                 actor = row_info[0].text.strip('\n')
@@ -77,6 +77,7 @@ def get_nominees(url):
 def write_csv(nominees):
     with open('acting_nominees.csv', 'w') as csv_file:
         writer = csv.writer(csv_file)
+        writer.writerow(['year', 'category', 'actor/actress','winner', 'movie'])
         writer.writerows(nominees)
 
 def get_best_pic(url):
