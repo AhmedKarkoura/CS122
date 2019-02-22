@@ -12,5 +12,6 @@ def get_awards():
    oscars = oscars.loc[oscars.category.str.contains("SPECIAL") == False]
    oscars = oscars.loc[oscars.category.str.contains("AWARD") == False]
    oscars = oscars.loc[oscars.category.isin(DISCONTINUED_CATEGORIES) == False]
+   oscars = oscars.loc[oscars.year >= 1929]
    oscars.to_csv(r'oscars_awards.csv', index = False)
 
