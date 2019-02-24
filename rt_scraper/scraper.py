@@ -74,7 +74,8 @@ def movie_level_data(index_filename, i = 0):
     c = db.cursor()
     r = c.execute(s)
 
-    urls = r.fetchall()[i:]
+    urls = r.fetchall()[:i+1]
+    urls = urls[::-1]
 
     db.close()
 
@@ -87,7 +88,7 @@ def movie_level_data(index_filename, i = 0):
             url = util.convert_if_relative_url(current_url, url)
         
             print(i, title, movie_id)
-            i += 1
+            i -= 1
 
             r = url_request(index_filename, i, url)
             html = r.read()
