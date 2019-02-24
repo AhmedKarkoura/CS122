@@ -49,6 +49,7 @@ def get_movie_links():
             new_movie['short_synopsis'] = movie.get('synopsis')
             new_movie['title'] = movie.get('title')
             new_movie['relative_url'] = movie.get('url')
+            new_movie['poster_url'] = movie.get('posters').get('primary')
 
             movie_dict[movie_id] = new_movie
 
@@ -63,11 +64,12 @@ def all_movies_page_csv(index_filename):
         for movie_id, movie in movie_dict.items():
             writer.writerow([movie_id, '/'.join(movie.get('actors')), 
                              movie.get('h_runtime'), movie.get('short_synopsis'),
-                             movie.get('title'), movie.get('relative_url')])
+                             movie.get('title'), movie.get('relative_url'),
+                             movie.get('poster_url')])
 
 def movie_level_data(index_filename, i = 0):
     s = 'SELECT title, movie_id, url FROM all_page'
-    db = sqlite3.connect('sql_db_files/rt.db')
+    db = sqlite3.connect('sql_db_files/rotten_tomatoes.db')
     
     c = db.cursor()
     r = c.execute(s)
@@ -76,7 +78,7 @@ def movie_level_data(index_filename, i = 0):
 
     db.close()
 
-    current_url= 'https://www.rottentomatoes.com/'
+    current_url = 'https://www.rottentomatoes.com/'
 
     with open(index_filename, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter = '|')
@@ -93,8 +95,16 @@ def movie_level_data(index_filename, i = 0):
 
             movie = data_collector(soup)
 
-            writer.writerow([movie_id, 
-                             movie.get('Directed by:'),
+            if movie.get('Runtime:'):
+                movie['Runtime:'] = movie.get('Runtime:').strip('minutes ')
+
+            if movie.get('In Theaters:'):
+                movie['In Theaters:'] = re.search('[a-zA-Z]{3} [0-9,]+ [0-9]{4}', 
+                    movie.get('In Theaters:')).group()
+
+            writer.writerow([movie_id,
+                             title, 
+                             movie.get('Directed By:'),
                              movie.get('Genre:'),
                              movie.get('In Theaters:'),
                              movie.get('On Disc/Streaming:'),
@@ -102,7 +112,17 @@ def movie_level_data(index_filename, i = 0):
                              movie.get('Runtime:'),
                              movie.get('Studio:'),
                              movie.get('Written By:'),
-                             movie.get('full_synop')])
+                             movie.get('full_synop'),
+                             movie.get('all_reviewers_average'),
+                             movie.get('num_reviewers'),
+                             movie.get('all_fresh'),
+                             movie.get('all_rotten'),
+                             movie.get('top_reviewers_average'),
+                             movie.get('num_top_reviewers'),
+                             movie.get('top_fresh'),
+                             movie.get('top_rotten'),
+                             movie.get('user_rating'),
+                             movie.get('num_users')])
 
 def data_collector(soup):
     movie_info = {}
@@ -128,6 +148,61 @@ def data_collector(soup):
 
         movie_info[label] = s.strip()
 
+    ratings = soup.find_all('div', class_ = 'superPageFontColor')
+
+    rp = '\d(\.\d)?\/\d+'
+    np = '\d+'
+
+    if len(ratings) == 10:
+        match = re.search(rp, ratings[4].text)
+        if match:
+            movie_info['top_reviewers_average'] = match.group()
+
+        match = re.search(np, ratings[5].text)
+        if match:
+            movie_info['num_top_reviewers'] = match.group()
+
+        match = re.search(np, ratings[6].text)
+        if match:
+            movie_info['top_fresh'] = match.group()
+
+        match = re.search(np, ratings[7].text)
+        if match:
+            movie_info['top_rotten'] = match.group()
+
+        match = re.search(rp, ratings[9].text)
+        if match:
+            movie_info['user_rating'] = match.group()
+
+        match = re.search('[0-9,]*[0-9,]*[0-9]{2,}', ratings[9].text)
+        if match:
+            movie_info['num_users'] = match.group()
+
+    else:
+        match = re.search(rp, ratings[5].text)
+        if match:
+            movie_info['user_rating'] = match.group()
+
+        match = re.search('[0-9,]*[0-9,]*[0-9]{2,}', ratings[5].text)
+        if match:
+            movie_info['num_users'] = match.group()
+
+    match = re.search(rp, ratings[0].text)
+    if match:
+        movie_info['all_reviewers_average'] = match.group()
+
+    match = re.search(np, ratings[1].text)
+    if match:
+        movie_info['num_reviewers'] = match.group()
+
+    match = re.search(np, ratings[2].text)
+    if match:
+        movie_info['all_fresh'] = match.group()
+
+    match = re.search(np, ratings[3].text)
+    if match:
+        movie_info['all_rotten'] = match.group()
+
     return movie_info
 
 N_MAX = 5
@@ -138,7 +213,7 @@ def url_request(url, n = 1):
 
     except Exception as e:
         print('Trying again: this is try ', n + 1)
-        if n <= N_MAX:
+        if n < N_MAX:
             time.sleep(5)
             r = url_request(url, n + 1)
 
