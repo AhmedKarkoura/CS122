@@ -80,7 +80,7 @@ def movie_level_data(index_filename, i = 0):
 
     current_url = 'https://www.rottentomatoes.com/'
 
-    with open(index_filename + '_' + str(i), 'w') as csvfile:
+    with open('movie_level_files/' + index_filename + '_' + str(i) + '.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter = '|')
     
         for title, movie_id, url in urls:
@@ -102,12 +102,16 @@ def movie_level_data(index_filename, i = 0):
                 movie['In Theaters:'] = re.search('[a-zA-Z]{3} [0-9,]+ [0-9]{4}', 
                     movie.get('In Theaters:')).group()
 
+            if movie.get('Box Office:'):
+                movie['Box Office:'] = movie.get('Box Office:').strip()
+
             writer.writerow([movie_id,
                              title, 
                              movie.get('Directed By:'),
                              movie.get('Genre:'),
                              movie.get('In Theaters:'),
                              movie.get('On Disc/Streaming:'),
+                             movie.get('Box Office:'),
                              movie.get('Rating:'),
                              movie.get('Runtime:'),
                              movie.get('Studio:'),
@@ -218,7 +222,7 @@ def url_request(index_filename, i, url, n = 1):
             r = url_request(index_filename, i, url, n + 1)
 
         else:
-            movie_level_data(index_filename, i = i+1)
+            movie_level_data(index_filename, i = i)
 
     return r
 
