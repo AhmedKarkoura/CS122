@@ -80,7 +80,7 @@ def movie_level_data(index_filename, i = 0):
 
     current_url = 'https://www.rottentomatoes.com/'
 
-    with open(index_filename, 'w') as csvfile:
+    with open(index_filename + '_' + str(i), 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter = '|')
     
         for title, movie_id, url in urls:
@@ -89,7 +89,7 @@ def movie_level_data(index_filename, i = 0):
             print(i, title, movie_id)
             i += 1
 
-            r = url_request(url)
+            r = url_request(index_filename, i, url)
             html = r.read()
             soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
@@ -207,7 +207,7 @@ def data_collector(soup):
 
 N_MAX = 5
 
-def url_request(url, n = 1):
+def url_request(index_filename, i, url, n = 1):
     try:
         r = urllib.request.urlopen(url)
 
@@ -215,11 +215,10 @@ def url_request(url, n = 1):
         print('Trying again: this is try ', n + 1)
         if n < N_MAX:
             time.sleep(5)
-            r = url_request(url, n + 1)
+            r = url_request(index_filename, i, url, n + 1)
 
         else:
-            print('Failed')
-            raise e
+            movie_level_data(index_filename, i = i+1)
 
     return r
 
