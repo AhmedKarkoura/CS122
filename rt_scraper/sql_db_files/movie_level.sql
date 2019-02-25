@@ -1,9 +1,11 @@
 CREATE TABLE movie_page (
-    movie_id int PRIMARY KEY,
+    movie_id int,
     title VARCHAR(255),
+    directors VARCHAR(1024),
     genre VARCHAR(1024),
     theater_date VARCHAR(64),
     stream_date VARCHAR(64),
+    box_office int,
     mpaa VARCHAR(1024),
     runtime int,
     studio VARCHAR(1024),
@@ -21,4 +23,4 @@ CREATE TABLE movie_page (
     num_users int
     );
 
-.import movie_level.csv movie_page
+.import all_movies.csv movie_page
