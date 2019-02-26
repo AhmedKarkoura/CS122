@@ -13,6 +13,9 @@ rt['year'] = rt['theater_date'].apply(lambda x: x[-4:])
 
 imdb = pd.read_csv('../imdb/imdb_full.csv', low_memory=False)
 
+rt['title'] = rt['title'].str.title()
+
+
 #movie_imdb = imdb[imdb['titleType'] == 'movie']
 
 #######################
@@ -21,7 +24,7 @@ imdb = pd.read_csv('../imdb/imdb_full.csv', low_memory=False)
 
 n_maxes = imdb.groupby(['primaryTitle']).numVotes.transform(max)
 imdb_dup = imdb.loc[imdb.numVotes == n_maxes]
-
+imdb_dup['primaryTitle'] = imdb_dup['primaryTitle'].str.title()
 
 #rt[rt['title'].isin(imdb['primaryTitle'])].shape
 
@@ -41,3 +44,7 @@ merged_unmatched = unmatched_imdb.merge(unmatched_rt, left_on='primaryTitle',
 merged_unmatched.to_csv('merged_unmatched.csv', encoding='utf-8',  index=False)
 
 matches_unmatched = merged_unmatched[merged_unmatched['startYear'] == merged_unmatched['year']]
+
+
+rt['title'] = rt['title'].str.lower()
+imdb['primaryTitle'] = imdb['primaryTitle'].str.lower()
