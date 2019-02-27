@@ -12,7 +12,10 @@ rt['theater_date'] = rt['theater_date'].astype(str)
 rt['year'] = rt['theater_date'].apply(lambda x: x[-4:])
 
 imdb = pd.read_csv('../imdb/imdb_full.csv', low_memory=False)
+names = pd.read_csv('../imdb/final_names.csv', low_memory=False)
+names_full = pd.read_csv('../imdb/name_basics.tsv', sep='\t', low_memory=False) 
 
+imdb['primaryTitle'] = imdb['primaryTitle'].str.title()
 rt['title'] = rt['title'].str.title()
 
 
@@ -31,20 +34,51 @@ imdb_dup['primaryTitle'] = imdb_dup['primaryTitle'].str.title()
 merged_matched = imdb_dup.merge(rt, left_on='primaryTitle', right_on='title')
 merged_matched[merged_matched['startYear'] == merged_matched['year']].shape
 new_merge = merged_matched[merged_matched['startYear'] == merged_matched['year']]
-new_merge.to_csv('merged_matched.csv', encoding='utf-8',  index=False)
+#new_merge.to_csv('merged_matched.csv', encoding='utf-8',  index=False)
 
 
 #Now I have a dataset of 5101 movies with identical year and name
 #want to remove these movies from rt and imdb_dup and try again to find matches
 
 unmatched_rt = rt[rt['movie_id'].isin(new_merge['movie_id'])==False]
-unmatched_imdb = imdb[imdb['tconst'].isin(new_merge['movie_id'])==False]
-merged_unmatched = unmatched_imdb.merge(unmatched_rt, left_on='primaryTitle', 
-    right_on='title')
-merged_unmatched.to_csv('merged_unmatched.csv', encoding='utf-8',  index=False)
+
+
+# unmatched_imdb = imdb[imdb['tconst'].isin(new_merge['movie_id'])==False]
+
+merged_unmatched = imdb.merge(unmatched_rt, left_on='primaryTitle', 
+    right_on='title') #doing it again with non duplicates
+
+
+# merged_unmatched.to_csv('merged_unmatched.csv', encoding='utf-8',  index=False)
 
 matches_unmatched = merged_unmatched[merged_unmatched['startYear'] == merged_unmatched['year']]
 
+total_matched = pd.concat([new_merge,matches_unmatched]).reset_index(drop=True)
 
-rt['title'] = rt['title'].str.lower()
-imdb['primaryTitle'] = imdb['primaryTitle'].str.lower()
+total_matched.to_csv('5681_matches.csv', encoding='utf-8',  index=False)
+
+imdb_names = imdb.merge(names, left_on='directors', right_on='nconst')
+unmatched_rt_2 = rt[rt['movie_id'].isin(total_matched['movie_id'])==False]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+unmatched_rt_2 = rt[rt['movie_id'].isin(total_matched['movie_id'])==False]
+unmatched_imdb_2 = imdb[imdb['tconst'].isin(total_matched['tconst'])==False]
+
+another_merge = imdb_dup.merge(unmatched_rt_2, left_on='primaryTitle',right_on='title')
