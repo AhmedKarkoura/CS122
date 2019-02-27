@@ -6,12 +6,18 @@ import numpy as np
 import os
 import csv
 
+from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import r2_score
+
+import pydotplus
+from sklearn.externals.six import StringIO  
+from IPython.display import Image  
+from sklearn.tree import export_graphviz
 
 
 def setup():
@@ -38,9 +44,10 @@ def setup():
         'writers', 'full_synop', 'num_all_fresh', 'num_all_rotten', 'num_top_fresh',
         'num_top_rotten', 'titleType', 'genre', 'originalTitle', 'primaryTitle',
         'mpaa', 'writer', 'directors_x', 'user_rating', 'num_users',
-        'num_top_reviewers', 'num_all_reviewers'], axis = 1)
+        'num_top_reviewers', 'num_all_reviewers', 'tconst', 'movie_id', 'title', 'year',
+        'numVotes', 'top_reviewers_average', 'theater_date'], axis = 1)
 
-    matches.theater_date = matches.theater_date.astype(str).apply(lambda x: x[-4:]).astype(int)
+    # matches.theater_date = matches.theater_date.astype(str).apply(lambda x: x[-4:]).astype(int)
 
     for i in range(3):
         matches['genre' + str(i)] = matches.genres.apply(lambda x: split_field(x, i))
@@ -53,6 +60,16 @@ def setup():
     ## STILL NEED TO DO THE SAME FOR ACTORS, mpaa?
 
     matches = matches.drop(['genres', 'directors_y'], axis = 1)
+    matches.box_office = matches.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
+
+    cat_cols = ['genre0', 'genre1', 'genre2', 'directors0', 'directors1', 'studio', 
+        'averageRating', 'all_reviewers_average']
+    
+    for col in cat_cols:
+        matches[col] = matches[col].astype(str)
+        le = preprocessing.LabelEncoder()
+        le.fit(matches[col])
+        matches[col] = le.transform(matches[col])
 
     return matches
 
@@ -66,47 +83,51 @@ def split_field(l, i):
     return val
 
 def classifications():
-    matches - setup()
-    ys = ['box_office', 'averageRating', 'all_reviewers_average', 'top_reviewers_average']
+    matches = setup()
+    ys = ['box_office', 'averageRating', 'all_reviewers_average']
     for prediction in ys:
         print(prediction)
 
         X_train, X_test, y_train, y_test = train_test_split(matches.drop(ys, axis = 1), 
             matches[prediction], random_state = 42)
 
-        nb = GaussianNB()
-        nb.fit(X_train, y_train)
-        y_pred = nb.predict(X_test)
-        nb_auc = roc_auc_score(y_test, y_pred)
-        print('NB AUC: ', nb_auc)
-        print('NB SCORE: ', nb.score(X_test, y_test))
-
         dt = DecisionTreeClassifier()
         dt.fit(X_train, y_train)
         y_pred = dt.predict(X_test)
-        dt_auc = roc_auc_score(y_test, y_pred)
-        print('DTC: ', dt_auc)
-
-
-        rf = RandomForestClassifier(n_estimators = 100)
-        rf.fit(X_train, y_train)
-        y_pred = rf.predict(X_test)
-        rf_auc = roc_auc_score(y_test, y_pred)
-        print('RFC: ', rf_auc)
-
-        svc = SVC(gamma = 'auto')
-        svc.fit(X_train, y_train)
-        y_pred = svc.predict(X_test)
-        svc_auc = roc_auc_score(y_test, y_pred)
-        print('SVC: ', svc_auc)
-
-        reg = LinearRegression()
-        reg.fit(X_train, y_train)
-        y_pred = reg.predict(X_test)
-        reg_auc = roc_auc_score(y_test, y_pred)
-        print('LinReg: ', reg_auc)
+        print('DTC R2: ', r2_score(y_test, y_pred))
+        print('DTC SCORE: ', dt.score(X_test, y_test))
         print()
 
+        # dot_data = StringIO()
+        # export_graphviz(dt, out_file=dot_data,  
+        #                 filled=True, rounded=True,
+        #                 special_characters=True)
+        # graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+        # Image(graph.create_png())
+        # print()
+        # print()
+
+        # rf = RandomForestClassifier(n_estimators = 100)
+        # rf.fit(X_train, y_train)
+        # # y_pred = rf.predict(X_test)
+        # # rf_auc = roc_auc_score(y_test, y_pred)
+        # # print('RFC AUC: ', rf_auc)
+        # print('RFC SCORE: ', rf.score(X_test, y_test))
+
+        # reg = LinearRegression()
+        # reg.fit(X_train, y_train)
+        # # y_pred = reg.predict(X_test)
+        # # reg_auc = roc_auc_score(y_test, y_pred)
+        # # print('LinReg AUC: ', reg_auc)
+        # print('LinReg SCORE: ', reg.score(X_test, y_test))
+
+        # nb = GaussianNB()
+        # nb.fit(X_train, y_train)
+        # # y_pred = nb.predict(X_test)
+        # # nb_auc = roc_auc_score(y_test, y_pred)
+        # # print('NB AUC: ', nb_auc)
+        # print('NB SCORE: ', nb.score(X_test, y_test))
+        # print()
 
 
 
