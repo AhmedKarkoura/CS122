@@ -81,26 +81,33 @@ def get_select(ui_dict):
                      'ratings.writer1', 'ratings.top_actors', 'ratings.critics_score', 'ratings.audience_score', 
                      'ratings.imdb_score', 'ratings.box_office', 'ratings.poster_url', 'ratings.short_syn', 
                      'ratings.runtime']
+    if ui_dict['order_by'] == 'oscars_nominations':
+        current_SELECT.append('oscars.total_nominations')
     query_SELECT = 'SELECT DISTINCT ' + ', '.join(current_SELECT)
     
     return query_SELECT
 
 
 def get_from(ui_dict):
-    query_FROM = " FROM ratings JOIN principal JOIN names ON ratings.movie_id = principal.movie_id AND principal.name_id = names.name_id"
-    '''
-    "JOIN awards JOIN acting_nominees" + \
-           "ON ratings.tconst = principal.tconst AND principal.nconst = names.nconst " + \
-           "AND ratings.tconst = oscars.tconst AND principal.nconst = acting_nominees.nconst " + \
-           "AND principal.tconst = acting_nominees.tconst"
-    '''
+    FROM = ['ratings', 'principal', 'names']
+    ON = ['ratings.movie_id = principal.movie_id', 'principal.name_id = names.name_id']
 
+    if ui_dict['order_by'] == 'oscars_nominations':
+        FROM.append(("(SELECT awards.movie, awards_num + acting_num AS total_nominations, awards.year "
+        "FROM (SELECT awards.movie, COUNT(*) AS awards_num, awards.year "
+        "FROM awards GROUP BY awards.movie, awards.year) AS awards "
+        "JOIN (SELECT acting_nominees.movie, COUNT(*) AS acting_num, acting_nominees.year "
+        "FROM acting_nominees GROUP BY acting_nominees.movie, acting_nominees.year) "
+        "AS acting_nominees ON awards.movie = acting_nominees.movie) as oscars"))
+        ON += ["ratings.title = oscars.movie", "ratings.year = oscars.year"]
+
+    query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + ' AND '.join(ON)
     return query_FROM
 
 def get_where_params(ui_dict):
     WHERE_DICT = {"genre": "(ratings.genre1 == ? OR ratings.genre2 == ? OR ratings.genre3 == ?)",
                   "actor": "(fuzz(names.name, ?) >= 80 and (principal.category == 'actor' or principal.category == 'actress'))",
-                  "director": "(fuzz(names.name, ?) >= 80 and principal.category == 'director')",
+                  "director": "(fuzz(names.name, ?) >= 80 and (ratings.director1 == ? or ratings.director2 = ?))",
                   "studio": "studio = ?",
                   "rating": "rating = ?",
                   "runtime": "runtime <= ?"}
@@ -114,6 +121,8 @@ def get_where_params(ui_dict):
                 params += 3 * [ui_dict[arg][:]]
             elif arg in ['actor', 'director', 'studio']:
                 params.append(ui_dict[arg].title())
+                if arg == 'director':
+                    params += 2 * [ui_dict[arg][:]]
             else: 
                 params.append(ui_dict[arg])
 
@@ -122,18 +131,23 @@ def get_where_params(ui_dict):
     return query_WHERE, params
 
 def get_orderby(ui_dict):
-    ORDERBY_DICT = {"oscar_winners": "",
+    ORDERBY_DICT = {"oscars_nominations": "total_nominations DESC",
                     "critics_score": "ratings.critics_score DESC",
                     "audience_score": "ratings.audience_score DESC",
                     "box_office": "ratings.box_office DESC"}
     
-    query_ORDERBY = "ORDER BY " + ORDERBY_DICT[ui_dict['order_by']]
+    query_ORDERBY = " ORDER BY " + ORDERBY_DICT[ui_dict['order_by']]
+
+     
+
 
     return query_ORDERBY
 
-TEST_0 = {'genre': 'Drama',
-          'actor': "TOM CRUISE",
+TEST_2 = {'actor': 'emma stone',
           'order_by': 'critics_score'}
+
+TEST_0 = {'actor': "emma stone",
+          'order_by': 'oscars_nominations'}
 
 TEST_1 = {
     'genre': 'Drama',

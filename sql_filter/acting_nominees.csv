@@ -1,35 +1,35 @@
 year,category,actor/actress,winner,movie
-1927,BEST ACTOR,Emil Jannings [A,True,The Last CommandThe Way of All Flesh
+1927,BEST ACTOR,Emil Jannings,True,The Last CommandThe Way of All Flesh
 1927,BEST ACTOR,Richard Barthelmess,False,The NooseThe Patent Leather Kid
 1928,BEST ACTOR,Warner Baxter ,True,In Old Arizona
 1928,BEST ACTOR,George Bancroft,False,Thunderbolt
 1928,BEST ACTOR,Chester Morris,False,Alibi
 1928,BEST ACTOR,Paul Muni,False,The Valiant
 1928,BEST ACTOR,Lewis Stone,False,The Patriot
-1929,BEST ACTOR,George Arliss [B,True,Disraeli
-1929,BEST ACTOR,George Arliss[B,False,The Green Goddess
+1929,BEST ACTOR,George Arliss,True,Disraeli
+1929,BEST ACTOR,George Arliss,False,The Green Goddess
 1929,BEST ACTOR,Wallace Beery,False,The Big House
-1929,BEST ACTOR,Maurice Chevalier [B,False,The Big Pond  The Love Parade
-1929,BEST ACTOR,Ronald Colman [B,False,Bulldog Drummond  Condemned
+1929,BEST ACTOR,Maurice Chevalier,False,The Big Pond  The Love Parade
+1929,BEST ACTOR,Ronald Colman,False,Bulldog Drummond  Condemned
 1929,BEST ACTOR,Lawrence Tibbett,False,The Rogue Song
-1930,BEST ACTOR,Lionel Barrymore ,True,A Free Soul
+1930,BEST ACTOR,Lionel Barrymore,True,A Free Soul
 1930,BEST ACTOR,Jackie Cooper,False,Skippy
 1930,BEST ACTOR,Richard Dix,False,Cimarron
 1930,BEST ACTOR,Fredric March,False,The Royal Family of Broadway
 1930,BEST ACTOR,Adolphe Menjou,False,The Front Page
-1931,BEST ACTOR,Wallace Beery  (TIE) [C,True,The Champ
-1931,BEST ACTOR,Fredric March  (TIE) [C,True,Dr. Jekyll and Mr. Hyde
+1931,BEST ACTOR,Wallace Beery,True,The Champ
+1931,BEST ACTOR,Fredric March,True,Dr. Jekyll and Mr. Hyde
 1931,BEST ACTOR,Alfred Lunt,False,The Guardsman
 1932,BEST ACTOR,Charles Laughton ,True,The Private Life of Henry VIII
 1932,BEST ACTOR,Leslie Howard,False,Berkeley Square
 1932,BEST ACTOR,Paul Muni,False,I Am a Fugitive from a Chain Gang
-1934,BEST ACTOR,Clark Gable ,True,It Happened One Night
+1934,BEST ACTOR,Clark Gable,True,It Happened One Night
 1934,BEST ACTOR,Frank Morgan,False,The Affairs of Cellini
 1934,BEST ACTOR,William Powell,False,The Thin Man
 1935,BEST ACTOR,Victor McLaglen ,True,The Informer
 1935,BEST ACTOR,Clark Gable,False,Mutiny on the Bounty
 1935,BEST ACTOR,Charles Laughton,False,Mutiny on the Bounty
-1935,BEST ACTOR,Paul Muni [D,False,Black Fury
+1935,BEST ACTOR,Paul Muni,False,Black Fury
 1935,BEST ACTOR,Franchot Tone,False,Mutiny on the Bounty
 1936,BEST ACTOR,Paul Muni ,True,The Story of Louis Pasteur
 1936,BEST ACTOR,Gary Cooper,False,Mr. Deeds Goes to Town
@@ -444,7 +444,7 @@ year,category,actor/actress,winner,movie
 2018,BEST ACTOR,Christian Bale,False,Vice
 2018,BEST ACTOR,Bradley Cooper,False,A Star Is Born
 2018,BEST ACTOR,Willem Dafoe,False,At Eternity's Gate
-2018,BEST ACTOR,Rami Malek,False,Bohemian Rhapsody
+2018,BEST ACTOR,Rami Malek,True,Bohemian Rhapsody
 2018,BEST ACTOR,Viggo Mortensen,False,Green Book
 1927,BEST ACTRESS,Janet Gaynor ,True,7th HeavenStreet AngelSunrise: A Song of Two Humans
 1927,BEST ACTRESS,Louise Dresser,False,A Ship Comes In
@@ -894,7 +894,7 @@ year,category,actor/actress,winner,movie
 2017,BEST ACTRESS,Meryl Streep,False,The Post
 2018,BEST ACTRESS,Yalitza Aparicio,False,Roma
 2018,BEST ACTRESS,Glenn Close,False,The Wife
-2018,BEST ACTRESS,Olivia Colman,False,The Favourite
+2018,BEST ACTRESS,Olivia Colman,True,The Favourite
 2018,BEST ACTRESS,Lady Gaga,False,A Star Is Born
 2018,BEST ACTRESS,Melissa McCarthy,False,Can You Ever Forgive Me?
 1936,BEST SUPPORTING ACTOR,Walter Brennan ,True,Come and Get It
@@ -1307,7 +1307,7 @@ year,category,actor/actress,winner,movie
 2017,BEST SUPPORTING ACTOR,Woody Harrelson,False,"Three Billboards Outside Ebbing, Missouri"
 2017,BEST SUPPORTING ACTOR,Richard Jenkins,False,The Shape of Water
 2017,BEST SUPPORTING ACTOR,Christopher Plummer,False,All the Money in the World
-2018,BEST SUPPORTING ACTOR,Mahershala Ali,False,Green Book
+2018,BEST SUPPORTING ACTOR,Mahershala Ali,True,Green Book
 2018,BEST SUPPORTING ACTOR,Adam Driver,False,BlacKkKlansman
 2018,BEST SUPPORTING ACTOR,Sam Elliott,False,A Star Is Born
 2018,BEST SUPPORTING ACTOR,Richard E. Grant,False,Can You Ever Forgive Me?
@@ -1724,6 +1724,6 @@ year,category,actor/actress,winner,movie
 2017,BEST SUPPORTING ACTRESS,Octavia Spencer,False,The Shape of Water
 2018,BEST SUPPORTING ACTRESS,Amy Adams,False,Vice
 2018,BEST SUPPORTING ACTRESS,Marina de Tavira,False,Roma
-2018,BEST SUPPORTING ACTRESS,Regina King,False,If Beale Street Could Talk
+2018,BEST SUPPORTING ACTRESS,Regina King,True,If Beale Street Could Talk
 2018,BEST SUPPORTING ACTRESS,Emma Stone,False,The Favourite
 2018,BEST SUPPORTING ACTRESS,Rachel Weisz,False,The Favourite
