@@ -58,27 +58,46 @@ total_matched = pd.concat([new_merge,matches_unmatched]).reset_index(drop=True)
 total_matched.to_csv('5681_matches.csv', encoding='utf-8',  index=False)
 
 imdb_names = imdb.merge(names, left_on='directors', right_on='nconst')
-unmatched_rt_2 = rt[rt['movie_id'].isin(total_matched['movie_id'])==False]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+imdb_names_full = imdb.merge(names_full, left_on='directors', right_on='nconst')  
 
 
 unmatched_rt_2 = rt[rt['movie_id'].isin(total_matched['movie_id'])==False]
-unmatched_imdb_2 = imdb[imdb['tconst'].isin(total_matched['tconst'])==False]
+unmatched_merged_2 = imdb_names_full.merge(rt, left_on='primaryTitle', right_on='title')
 
-another_merge = imdb_dup.merge(unmatched_rt_2, left_on='primaryTitle',right_on='title')
+
+unmatched_merged_final = unmatched_merged_2[unmatched_merged_2\
+['directors_y']==unmatched_merged_2['primaryName']]
+
+
+unmatched_merged_final = unmatched_merged_final.drop(columns=['nconst', 'primaryName',
+'birthYear', 'deathYear', 'primaryProfession', 'knownForTitles'])
+
+final_merged = pd.concat([total_matched, unmatched_merged_final]).drop_duplicates().reset_index(drop=True)
+
+final_merged = final_merged.drop(columns=['titleType', 'originalTitle',
+'endYear'])
+
+
+final_unmatched = rt[rt['movie_id'].isin(final_merged['movie_id'])==False]
+###########################################
+
+principals = pd.read_csv('../imdb_here/principals.tsv', sep='\t', low_memory=False) 
+updated_principals = principals[principals['tconst'].isin(merged_matched['tconst'])]
+updated_principals = updated_principals.drop(columns=['ordering', 'job', 'characters'])
+
+updated_names = [names['nconst'].isin(updated_principals['nconst'])]
+updated_names = updated_names.drop(columns=['birthYear', 'deathYear'])
+
+
+updated_principals.to_csv('updated_principals.csv', encoding='utf-8',  index=False)
+updated_names.to_csv('updated_names.csv', encoding='utf-8',  index=False)
+
+
+
+
+
+
+
+
+
+
