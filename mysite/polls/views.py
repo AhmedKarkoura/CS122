@@ -38,6 +38,7 @@ COLUMN_NAMES = dict(
 )
 
 NOPREF_STR = 'No preference'
+
 def _build_dropdown(options):
     """Convert a list to (value, caption) tuples."""
     return [(x, x) if x is not None else ('', NOPREF_STR) for x in options]
@@ -67,30 +68,6 @@ ORDER = _build_dropdown(['oscar_winners', 'critics_score', 'audience_score',
 class SearchForm(forms.Form):
 
 
-    # enrollment = EnrollmentRange(
-    #     label='Enrollment (lower/upper)',
-    #     help_text='e.g. 1 and 40',
-    #     widget=RANGE_WIDGET,
-    #     required=False)
-    # time = TimeRange(
-    #     label='Time (start/end)',
-    #     help_text='e.g. 1000 and 1430 (meaning 10am-2:30pm)',
-    #     widget=RANGE_WIDGET,
-    #     required=False)
-    # time_and_building = BuildingWalkingTime(
-    #     label='Walking time:',
-    #     help_text='e.g. 10 and RY (at most a 10-min walk from Ryerson)',
-    #     required=False,
-    #     widget=forms.widgets.MultiWidget(
-    #         widgets=(forms.widgets.NumberInput,
-    #                  forms.widgets.Select(choices=BUILDINGS))))
-    # dept = forms.ChoiceField(label='Department', choices=DEPTS, required=False)
-    # days = forms.MultipleChoiceField(label='Days',
-    #                                  choices=DAYS,
-    #                                  widget=forms.CheckboxSelectMultiple,
-    #                                  required=False)
-    
-
     genre = forms.ChoiceField(label='Genre', choices=GENRES, required=False)
     actor = forms.CharField(
         label='Actor/Actress',
@@ -110,16 +87,6 @@ class SearchForm(forms.Form):
 
     show_args = forms.BooleanField(label='Show args_to_ui',
                                    required=False)
-
-# Inputs: 
-#         Key, value pairs in ui_dict:
-#             genre = string
-#             actor/actress = string
-#             director = string
-#             studio = string
-#             rating = string
-#             runtime <= int
-#             order by = ['oscar_winners', 'critics_score', 'audience_score', 'box_office']
 
 def home(request):
     context = {}
