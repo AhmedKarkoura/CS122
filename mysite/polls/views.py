@@ -100,8 +100,8 @@ def home(request):
             # Convert form data to an args dictionary for find_courses
 
             args = {}
-            if form.cleaned_data['query']:
-                args['terms'] = form.cleaned_data['query']
+            if form.cleaned_data['genre']:
+                args['genre'] = form.cleaned_data['genre']
            
 
             genre = form.cleaned_data['genre']
@@ -112,8 +112,8 @@ def home(request):
             runtime = form.cleaned_data['runtime'] 
             order_by = form.cleaned_data['order_by']
 
-            if genre:
-                args['genre'] = genre
+            # if genre:
+            #     args['genre'] = genre
 
             if actor:
                 args['actor'] = actor
@@ -142,7 +142,7 @@ def home(request):
                 print('Exception caught')
                 bt = traceback.format_exception(*sys.exc_info()[:3])
                 context['err'] = """
-                An exception was thrown in find_courses:
+                An exception was thrown in find_movies:
                 <pre>{}
 {}</pre>
                 """.format(e, '\n'.join(bt))
@@ -158,11 +158,6 @@ def home(request):
         context['result'] = None
         context['err'] = res
         result = None
-    # elif not _valid_result(res):
-    #     context['result'] = None
-    #     context['err'] = ('Return of find_courses has the wrong data type. '
-    #                       'Should be a tuple of length 4 with one string and '
-    #                       'three lists.')
     else:
         columns, result = res
 
