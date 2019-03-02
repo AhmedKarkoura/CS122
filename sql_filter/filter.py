@@ -4,6 +4,16 @@ import numpy as np
 from fuzzywuzzy import fuzz
 import csv
 
+def merge(movie_level_csv, all_page_csv):
+    movie_level_df = pd.read_csv(movie_level_csv)
+    all_page_df = pd.read_csv(all_page_csv, sep = '|', header = None)
+    all_page_df.columns = ['movie_id', 'top3actors', 'all_page_runtime', 'short_syn', 'all_page_title',
+                           'all_page_title2', 'poster_url']
+    merged_df = all_page_df.merge(movie_level_df, left_on='movie_id', right_on='movie_id')
+    merged_df.to_csv('merged_all.csv', index = False)
+
+    return merged_df
+
 def clean_csv(csv_file_name):
     ratings = pd.read_csv(csv_file_name)
     ratings = ratings[['tconst', 'averageRating', 'title', 'directors_y', 
