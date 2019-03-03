@@ -11,7 +11,7 @@ from operator import and_
 
 from django.shortcuts import render
 from django import forms
-from filter import find_movies
+from filter import find_movies, clean_csv
 
 # def index(request):
 # 	return HttpResponse("Hello, world! You are at the polls index.")
@@ -27,7 +27,7 @@ from filter import find_movies
 #             order by = ['oscar_winners', 'critics_score', 'audience_score', 'box_office']
 
 NOPREF_STR = 'No preference'
-RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
+# RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
 COLUMN_NAMES = dict(
     genre='Genre',
     actor='Actor/Actress',
@@ -43,13 +43,13 @@ def _build_dropdown(options):
     """Convert a list to (value, caption) tuples."""
     return [(x, x) if x is not None else ('', NOPREF_STR) for x in options]
 
-genres_lst = ['No preference', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
+genres_lst = ['', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
 'Musical & Performing Arts', 'Animation', 'Comedy', 'Western',
 'Documentary', 'Horror', 'Mystery & Suspense', 'Cult Movies', 'Kids & Family',
 'Science Fiction & Fantasy', 'Romance', 'Sports & Fitness', 'Special Interest',
 'Gay & Lesbian', 'Television', 'Faith & Spirituality', 'Anime & Manga']
-ratings_lst = ['No preference', 'NR', 'PG-13', 'PG', 'G', 'R', 'NC17']
-studios_lst = ['No preference','IFC Films','Warner Bros. Pictures','Universal Pictures',
+ratings_lst = ['', 'NR', 'PG-13', 'PG', 'G', 'R', 'NC17']
+studios_lst = ['','IFC Films','Warner Bros. Pictures','Universal Pictures',
 '20th Century Fox','Magnolia Pictures','Sony Pictures Classics',
 'Paramount Pictures','Sony Pictures','Netflix','Focus Features',
 'Warner Home Video','Walt Disney Pictures','MGM' ,'MGM Home Entertainment'
@@ -62,7 +62,7 @@ studios_lst = ['No preference','IFC Films','Warner Bros. Pictures','Universal Pi
 GENRES = _build_dropdown(genres_lst)
 RATINGS = _build_dropdown(ratings_lst)
 STUDIOS = _build_dropdown(studios_lst)
-ORDER = _build_dropdown(['oscar_winners', 'critics_score', 'audience_score',
+ORDER = _build_dropdown(['oscars_nominations', 'critics_score', 'audience_score',
  'box_office'])
 
 class SearchForm(forms.Form):
@@ -125,7 +125,7 @@ def home(request):
                 args['studio'] = studio
 
             if rating:
-                args['rating'] = rating
+                args['mpaa'] = rating
 
             if runtime:
                 args['runtime'] = runtime
@@ -135,8 +135,12 @@ def home(request):
 
             if form.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
+            
+            ratings = clean_csv('../mysite/final_merged.csv')
+            res = find_movies(args)
 
             try:
+                ratings = clean_csv('../mysite/final_merged.csv')
                 res = find_movies(args)
             except Exception as e:
                 print('Exception caught')
