@@ -135,12 +135,10 @@ def home(request):
 
             if form.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
-            
-            ratings = clean_csv('../mysite/final_merged.csv')
-            res = find_movies(args)
+
 
             try:
-                ratings = clean_csv('../mysite/final_merged.csv')
+                # ratings = clean_csv('../mysite/final_merged.csv')
                 res = find_movies(args)
             except Exception as e:
                 print('Exception caught')
@@ -169,9 +167,9 @@ def home(request):
         if result and isinstance(result[0], str):
             result = [(r,) for r in result]
 
-        context['result'] = result
+        context['result'] = res
         context['num_results'] = len(result)
-        context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
+        #context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
 
     context['form'] = form
     return render(request, 'polls/index.html', context)

@@ -77,7 +77,37 @@ def find_movies(ui_dict):
         r = c.execute(query, params)
         movies = r.fetchall() 
         connection.close()
-        return movies
+        # return movies
+        if len(movies) == 0:
+            return ([],[])
+        else:
+            return (get_header(r), movies)
+
+
+def get_header(cursor):
+    '''
+    Given a cursor object, returns the appropriate header (column names)
+    '''
+    desc = cursor.description
+    header = ()
+
+    for i in desc:
+        header = header + (clean_header(i[0]),)
+
+    return list(header)
+
+def clean_header(s):
+    '''
+    Removes table name from header
+    '''
+    for i, _ in enumerate(s):
+        if s[i] == ".":
+            s = s[i + 1:]
+            break
+
+    return s
+
+
 
 def get_query(ui_dict):
     QUERY = get_select(ui_dict) + get_from(ui_dict) + \
