@@ -37,12 +37,6 @@ COLUMN_NAMES = dict(
     runtime='Runtime',
 )
 
-NOPREF_STR = 'No preference'
-
-def _build_dropdown(options):
-    """Convert a list to (value, caption) tuples."""
-    return [(x, x) if x is not None else ('', NOPREF_STR) for x in options]
-
 genres_lst = ['', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
 'Musical & Performing Arts', 'Animation', 'Comedy', 'Western',
 'Documentary', 'Horror', 'Mystery & Suspense', 'Cult Movies', 'Kids & Family',
@@ -58,6 +52,13 @@ studios_lst = ['','IFC Films','Warner Bros. Pictures','Universal Pictures',
 ,'Freestyle Releasing','Gravitas Ventures','Anchor Bay Entertainment'
 ,'Fox Searchlight Pictures','New Line Cinema','Strand Releasing'
 ,'Warner Bros.']
+
+
+def _build_dropdown(options):
+    """Convert a list to (value, caption) tuples."""
+    return [(x, x) if x is not None else ('', NOPREF_STR) for x in options]
+
+
 
 GENRES = _build_dropdown(genres_lst)
 RATINGS = _build_dropdown(ratings_lst)
@@ -164,8 +165,8 @@ def home(request):
         columns, result = res
 
         # Wrap in tuple if result is not already
-        if result and isinstance(result[0], str):
-            result = [(r,) for r in result]
+        # if result and isinstance(result[0], str):
+        #     result = [(r,) for r in result]
 
         context['result'] = res
         context['num_results'] = len(result)

@@ -1,9 +1,11 @@
-{% load staticfiles %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'polls/main.css' %}">
 <!DOCTYPE html>
 <html>
     <head>
         <title>Movie Recommendation</title>
-        <link rel="stylesheet" type="text/css" href="{% static "/main.css" %}" />
+        <link rel="stylesheet" type="text/css" href="{% static '/main.css' %}" />
     </head>
     <body>
         <div id="header">

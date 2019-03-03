@@ -5,19 +5,21 @@ html, body {
     font-family:'Open Sans', Helvetica, sans-serif;
 }
 
+
 div#header {
-    background: rgb(0, 0, 0);
+/*    background: rgb(0, 0, 0);*/
+    background: white url("images/background.jpg") no-repeat;
     margin: 0;
     padding: 0;
-    min-height: 200px;
+    min-height: 600px;
     position: relative;
 }
 
 div#header h1 {
-    font-size: 50px;
+    font-size: 75px;
     color: #E50914;
     margin: 0;
-    padding: 50px;
+    padding: 200px;
     justify-content: center;
     align-items: center;
 
@@ -83,7 +85,7 @@ table.form input#id_query {
     font-size: 18px;
 }
 
-/*table.form ul#id_days {
+table.form ul#id_days {
     margin: 0px;
     padding: 0px;
 }
@@ -94,8 +96,8 @@ table.form ul#id_days li {
     margin: 0px;
     padding: 0px;
 }
-*/
-/*table.courses {
+
+table.courses {
     border: 1px solid #ddd;
     padding: 0px;
     margin: 0px;
@@ -113,7 +115,7 @@ table.courses tr th {
 
 table.courses tr:nth-child(even) {
     background: #eee;
-}*/
+}
 
 ul.errorlist {
     margin: 0px;
@@ -131,5 +133,5 @@ ul.errorlist li {
 
 span.helptext {
     font-size: 11px;
-    color: red;
+    color: grey;
 }
