@@ -42,7 +42,7 @@ CREATE TABLE ratings (
     oscar_nomination_count int
     );
 .separator ,
-.import cleaned_matches_plus_oscar_count.csv ratings
+.import database.csv ratings
 
 CREATE TABLE principal (
 	movie_id VARCHAR(50),

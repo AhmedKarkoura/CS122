@@ -29,11 +29,13 @@ def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, merged_cs
     nominations_df['other_awards_count'] = nominations_df.other_awards_count.astype(int)
     nominations_df['total_nomination_count'] = nominations_df['acting_count'] + nominations_df['other_awards_count']
 
-    merged_df = merged_df.merge(nominations_df, how = 'left', left_on = ['primaryTitle', 'year'], right_on = ['movie', 'year'])
+    merged_df['lower_case_title'] = merged_df['primaryTitle'].str.lower().str.strip(' ')
+    nominations_df['lower_case_title'] = nominations_df['movie'].str.lower().str.strip(' ')
+    merged_df = merged_df.merge(nominations_df, how = 'left', left_on = ['lower_case_title', 'year'], right_on = ['lower_case_title', 'year'])
     merged_df['total_nomination_count'] = merged_df['total_nomination_count'].fillna(0)
     merged_df['total_nomination_count'] = merged_df['total_nomination_count'].astype(int)
 
-    merged_df.to_csv('mergedallpluscount.csv', index = False)
+    merged_df.to_csv('merged_oscar_count.csv', index = False)
 
     return merged_df
 
@@ -71,7 +73,7 @@ def clean_csv(csv_file_name):
        'critics_score', 'audience_score', 'year', 'genre1', 'genre2',
        'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3', 'oscars_nomination_count']
 
-    ratings.to_csv('cleaned_matches_plus_oscar_count.csv', index = False)
+    ratings.to_csv('database.csv', index = False)
 
     return ratings
 
@@ -209,9 +211,6 @@ def get_orderby(ui_dict):
                     "box_office": "ratings.box_office DESC"}
     
     query_ORDERBY = " ORDER BY " + ORDERBY_DICT[ui_dict['order_by']]
-
-     
-
 
     return query_ORDERBY
 
