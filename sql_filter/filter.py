@@ -43,7 +43,6 @@ def clean_csv(csv_file_name):
     ratings = ratings[['top3actors', 'short_syn', 'poster_url', 'tconst', 'averageRating', 'title', 'directors_y', 
     'genre', 'box_office', 'mpaa', 'runtime', 'studio', 'writer', 'full_synop', 
     'all_reviewers_average', 'user_rating', 'year', 'total_nomination_count']]
-
     
     ratings.user_rating = ratings.user_rating.astype(str)
     ratings.user_rating = ratings.user_rating.apply(lambda x: x.split('/')[0])
@@ -93,7 +92,7 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('complete.db')
+        connection = sqlite3.connect('updated_complete.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         params = get_where_params(ui_dict)[1]
@@ -141,12 +140,12 @@ def get_select(ui_dict):
     current_SELECT = ['ratings.title', 'ratings.critics_score', 'ratings.audience_score', 'ratings.box_office',
                       'ratings.director1']
     actual_SELECT = ['ratings.title', 'ratings.genre1', 'ratings.genre2', 'ratings.genre3', 'ratings.director1',
-                     'ratings.writer1', 'ratings.top_actors', 'ratings.critics_score', 'ratings.audience_score', 
-                     'ratings.imdb_score', 'ratings.box_office', 'ratings.poster_url', 'ratings.short_syn', 
-                     'ratings.runtime']
+                     'ratings.writer1', 'ratings.top3actors', 'ratings.critics_score', 'ratings.audience_score', 
+                     'ratings.box_office', 'ratings.poster_url', 'ratings.short_synop', 
+                     'ratings.runtime', 'ratings.mpaa']
     if ui_dict['order_by'] == 'oscars_nominations':
-        current_SELECT.append('oscars.total_nominations')
-    query_SELECT = 'SELECT DISTINCT ' + ', '.join(current_SELECT)
+        actual_SELECT.append('ratings.oscar_nomination_count')
+    query_SELECT = 'SELECT DISTINCT ' + ', '.join(actual_SELECT)
     
     return query_SELECT
 
@@ -154,6 +153,7 @@ def get_select(ui_dict):
 def get_from(ui_dict):
     FROM = ['ratings', 'principal', 'names']
     ON = ['ratings.movie_id = principal.movie_id', 'principal.name_id = names.name_id']
+    '''
 
     if ui_dict['order_by'] == 'oscars_nominations':
         FROM.append(("(SELECT awards.movie, awards_num + acting_num AS total_nominations, awards.year "
@@ -163,6 +163,7 @@ def get_from(ui_dict):
         "FROM acting_nominees GROUP BY acting_nominees.movie, acting_nominees.year) "
         "AS acting_nominees ON awards.movie = acting_nominees.movie) as oscars"))
         ON += ["ratings.title = oscars.movie", "ratings.year = oscars.year"]
+    '''
 
     query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + ' AND '.join(ON)
     return query_FROM
@@ -202,7 +203,7 @@ def get_where_params(ui_dict):
     return query_WHERE, params
 
 def get_orderby(ui_dict):
-    ORDERBY_DICT = {"oscars_nominations": "total_nominations DESC",
+    ORDERBY_DICT = {"oscars_nominations": "ratings.oscar_nomination_count DESC",
                     "critics_score": "ratings.critics_score DESC",
                     "audience_score": "ratings.audience_score DESC",
                     "box_office": "ratings.box_office DESC"}
