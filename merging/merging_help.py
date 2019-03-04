@@ -93,9 +93,12 @@ updated_principals.to_csv('updated_principals.csv', encoding='utf-8',  index=Fal
 updated_names.to_csv('updated_names.csv', encoding='utf-8',  index=False)
 
 
+######################################################
 
 
+rt_with_identical_titles_imdb = rt[rt['title'].isin(imdb['primaryTitle'])]
 
+potential_matches = rt_with_identical_titles_imdb[rt_with_identical_titles_imdb['title'].isin(final_merged['title'])== False]
 
 
 
