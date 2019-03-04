@@ -17,6 +17,9 @@ CREATE TABLE acting_nominees(
 .import acting_nominees.csv acting_nominees
 
 CREATE TABLE ratings (
+    top3actors VARCHAR(1024),
+    short_synop VARCHAR (1024),
+    poster_url VARCHAR (1024),
     movie_id VARCHAR(50),
     imdb_score int,
     title VARCHAR(255),
@@ -35,10 +38,11 @@ CREATE TABLE ratings (
     director2 VARCHAR(255),
     writer1 VARCHAR(255),
     writer2 VARCHAR(255),
-    writer3 VARCHAR(255)
+    writer3 VARCHAR(255),
+    oscar_nomination_count int
     );
 .separator ,
-.import cleaned_matches.csv ratings
+.import cleaned_matches_plus_oscar_count.csv ratings
 
 CREATE TABLE principal (
 	movie_id VARCHAR(50),

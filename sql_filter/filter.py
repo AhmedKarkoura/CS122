@@ -40,9 +40,9 @@ def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, merged_cs
 
 def clean_csv(csv_file_name):
     ratings = pd.read_csv(csv_file_name)
-    ratings = ratings[['tconst', 'averageRating', 'title', 'directors_y', 
+    ratings = ratings[['top3actors', 'short_syn', 'poster_url', 'tconst', 'averageRating', 'title', 'directors_y', 
     'genre', 'box_office', 'mpaa', 'runtime', 'studio', 'writer', 'full_synop', 
-    'all_reviewers_average', 'user_rating', 'year']]
+    'all_reviewers_average', 'user_rating', 'year', 'total_nomination_count']]
 
     
     ratings.user_rating = ratings.user_rating.astype(str)
@@ -62,17 +62,17 @@ def clean_csv(csv_file_name):
     ratings.box_office = ratings.box_office.fillna(-1)
     ratings.box_office = ratings.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
 
-    ratings = ratings[['tconst', 'averageRating', 'title',
+    ratings = ratings[['top3actors', 'short_syn', 'poster_url','tconst', 'averageRating', 'title',
        'box_office', 'mpaa', 'runtime', 'studio', 'full_synop',
        'all_reviewers_average', 'user_rating', 'year', 'genre1', 'genre2',
-       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3']]
+       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3','total_nomination_count']]
 
-    ratings.columns = ['movie_id', 'imdb_score', 'title',
-       'box_office', 'mpaa', 'runtime', 'studio', 'full_synop',
+    ratings.columns = ['top3actors', 'short_synopsis', 'poster_url', 'movie_id', 'imdb_score', 'title',
+       'box_office', 'mpaa', 'runtime', 'studio', 'full_synopsis',
        'critics_score', 'audience_score', 'year', 'genre1', 'genre2',
-       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3']
+       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3', 'oscars_nomination_count']
 
-    ratings.to_csv('cleaned_matches.csv', index = False)
+    ratings.to_csv('cleaned_matches_plus_oscar_count.csv', index = False)
 
     return ratings
 
