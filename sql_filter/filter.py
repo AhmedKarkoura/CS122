@@ -14,10 +14,34 @@ def merge(movie_level_csv, all_page_csv):
 
     return merged_df
 
+def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, merged_csv):
+    acting_nominees_df = pd.read_csv(acting_nominees_csv)
+    oscars_awards_df = pd.read_csv(oscars_awards_csv)
+    merged_df = pd.read_csv(merged_csv)
+
+    acting_nomination_count_df = acting_nominees_df.groupby(['movie', 'year']).size().reset_index(name = 'acting_count')
+    oscars_nominations_count_df = oscars_awards_df.groupby(['entity', 'year']).size().reset_index(name = 'other_awards_count')
+    nominations_df = pd.merge(oscars_nominations_count_df, acting_nomination_count_df, how = 'outer', left_on= ['entity', 'year'], right_on = ['movie','year'])
+    nominations_df['movie'] = nominations_df['movie'].fillna(nominations_df['entity'])
+    nominations_df = nominations_df.drop(columns = 'entity')
+    nominations_df = nominations_df.fillna(0)
+    nominations_df['acting_count'] = nominations_df.acting_count.astype(int)
+    nominations_df['other_awards_count'] = nominations_df.other_awards_count.astype(int)
+    nominations_df['total_nomination_count'] = nominations_df['acting_count'] + nominations_df['other_awards_count']
+
+    merged_df = merged_df.merge(nominations_df, how = 'left', left_on = ['primaryTitle', 'year'], right_on = ['movie', 'year'])
+    merged_df['total_nomination_count'] = merged_df['total_nomination_count'].fillna(0)
+    merged_df['total_nomination_count'] = merged_df['total_nomination_count'].astype(int)
+
+    merged_df.to_csv('mergedallpluscount.csv', index = False)
+
+    return merged_df
+
+
 def clean_csv(csv_file_name):
     ratings = pd.read_csv(csv_file_name)
     ratings = ratings[['tconst', 'averageRating', 'title', 'directors_y', 
-    'genre', 'box_office', 'mpaa', 'runtime',  'studio', 'writer', 'full_synop', 
+    'genre', 'box_office', 'mpaa', 'runtime', 'studio', 'writer', 'full_synop', 
     'all_reviewers_average', 'user_rating', 'year']]
 
     
@@ -77,7 +101,35 @@ def find_movies(ui_dict):
         r = c.execute(query, params)
         movies = r.fetchall() 
         connection.close()
-        return movies
+        if len(movies) == 0:
+            return ([],[])
+        else:
+            return (get_header(r), movies)
+
+
+def get_header(cursor):
+    '''
+    Given a cursor object, returns the appropriate header (column names)
+    '''
+    desc = cursor.description
+    header = ()
+
+    for i in desc:
+        header = header + (clean_header(i[0]),)
+
+    return list(header)
+
+def clean_header(s):
+    '''
+    Removes table name from header
+    '''
+    for i, _ in enumerate(s):
+        if s[i] == ".":
+            s = s[i + 1:]
+            break
+
+    return s
+
 
 def get_query(ui_dict):
     QUERY = get_select(ui_dict) + get_from(ui_dict) + \
