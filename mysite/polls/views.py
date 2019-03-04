@@ -11,31 +11,17 @@ from operator import and_
 
 from django.shortcuts import render
 from django import forms
-from filter import find_movies, clean_csv
-
-# def index(request):
-# 	return HttpResponse("Hello, world! You are at the polls index.")
-
-#  Inputs: 
-#         Key, value pairs in ui_dict:
-#             genre = string
-#             actor/actress = string
-#             director = string
-#             studio = string
-#             rating = string
-#             runtime <= int
-#             order by = ['oscar_winners', 'critics_score', 'audience_score', 'box_office']
+from filter import find_movies
 
 NOPREF_STR = 'No preference'
-# RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
+
 COLUMN_NAMES = dict(
     genre='Genre',
     actor='Actor/Actress',
     director='Director',
     studio='Studio',
     rating='Rating',
-    runtime='Runtime',
-)
+    runtime='Runtime')
 
 genres_lst = ['', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
 'Musical & Performing Arts', 'Animation', 'Comedy', 'Western',
@@ -52,6 +38,8 @@ studios_lst = ['','IFC Films','Warner Bros. Pictures','Universal Pictures',
 ,'Freestyle Releasing','Gravitas Ventures','Anchor Bay Entertainment'
 ,'Fox Searchlight Pictures','New Line Cinema','Strand Releasing'
 ,'Warner Bros.']
+order_by_lst = ['','oscars_nominations', 'critics_score', 'audience_score',
+ 'box_office']
 
 
 def _build_dropdown(options):
@@ -63,8 +51,7 @@ def _build_dropdown(options):
 GENRES = _build_dropdown(genres_lst)
 RATINGS = _build_dropdown(ratings_lst)
 STUDIOS = _build_dropdown(studios_lst)
-ORDER = _build_dropdown(['oscars_nominations', 'critics_score', 'audience_score',
- 'box_office'])
+ORDER = _build_dropdown(order_by_lst)
 
 class SearchForm(forms.Form):
 
@@ -98,7 +85,6 @@ def home(request):
         # check whether it's valid:
         if form.is_valid():
 
-            # Convert form data to an args dictionary for find_courses
 
             args = {}
             if form.cleaned_data['genre']:
@@ -139,7 +125,6 @@ def home(request):
 
 
             try:
-                # ratings = clean_csv('../mysite/final_merged.csv')
                 res = find_movies(args)
             except Exception as e:
                 print('Exception caught')
@@ -157,20 +142,44 @@ def home(request):
     # Handle different responses of res
     if res is None:
         context['result'] = None
+    
     elif isinstance(res, str):
         context['result'] = None
         context['err'] = res
         result = None
+
+    elif not _valid_result(res):
+        context['result'] = None
+        context['err'] = ('Return of find_movies has the wrong data type. '
+                          'Should be a tuple of length 4 with one string and '
+                          'three lists.')
+
     else:
         columns, result = res
+        columns = ['Title','Critics Score', "Audience Score", 'Box Office', 'Director']
 
         # Wrap in tuple if result is not already
-        # if result and isinstance(result[0], str):
-        #     result = [(r,) for r in result]
+        if result and isinstance(result[0], str):
+            result = [(r,) for r in result]
 
-        context['result'] = res
+        context['result'] = result
         context['num_results'] = len(result)
-        #context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
+        context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
 
     context['form'] = form
     return render(request, 'polls/index.html', context)
+   
+
+def _valid_result(res):
+    """Validate results returned by find_movies."""
+    (HEADER, RESULTS) = [0, 1]
+    n = len(res[HEADER])
+    if not (isinstance(res, (tuple, list)) and
+          len(res) == 2 and
+          isinstance(res[HEADER], (tuple, list)) and
+          isinstance(res[RESULTS], (tuple, list))):
+        return False
+    def _valid_row(row):
+        return isinstance(row, (tuple, list)) and len(row) == n
+    return reduce(and_, (_valid_row(x) for x in res[RESULTS]), True)
+

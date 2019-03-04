@@ -3,4 +3,5 @@ from django.urls import include, path
 
 urlpatterns = [
     path('', include('polls.urls')),
+    path('model/', include('model.urls'))
 ]

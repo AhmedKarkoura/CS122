@@ -7,7 +7,6 @@ html, body {
 
 
 div#header {
-/*    background: rgb(0, 0, 0);*/
     background: white url("images/background.jpg") no-repeat;
     margin: 0;
     padding: 0;
@@ -81,7 +80,7 @@ table.form input {
     margin-right: 5px;
 }
 
-table.form input#id_query {
+/*table.form input#id_query {
     font-size: 18px;
 }
 
@@ -95,7 +94,7 @@ table.form ul#id_days li {
     float: left;
     margin: 0px;
     padding: 0px;
-}
+}*/
 
 table.courses {
     border: 1px solid #ddd;
