@@ -29,21 +29,22 @@ def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, merged_cs
     nominations_df['other_awards_count'] = nominations_df.other_awards_count.astype(int)
     nominations_df['total_nomination_count'] = nominations_df['acting_count'] + nominations_df['other_awards_count']
 
-    merged_df = merged_df.merge(nominations_df, how = 'left', left_on = ['primaryTitle', 'year'], right_on = ['movie', 'year'])
+    merged_df['lower_case_title'] = merged_df['primaryTitle'].str.lower().str.strip(' ')
+    nominations_df['lower_case_title'] = nominations_df['movie'].str.lower().str.strip(' ')
+    merged_df = merged_df.merge(nominations_df, how = 'left', left_on = ['lower_case_title', 'year'], right_on = ['lower_case_title', 'year'])
     merged_df['total_nomination_count'] = merged_df['total_nomination_count'].fillna(0)
     merged_df['total_nomination_count'] = merged_df['total_nomination_count'].astype(int)
 
-    merged_df.to_csv('mergedallpluscount.csv', index = False)
+    merged_df.to_csv('merged_oscar_count.csv', index = False)
 
     return merged_df
 
 
 def clean_csv(csv_file_name):
     ratings = pd.read_csv(csv_file_name)
-    ratings = ratings[['tconst', 'averageRating', 'title', 'directors_y', 
+    ratings = ratings[['top3actors', 'short_syn', 'poster_url', 'tconst', 'averageRating', 'title', 'directors_y', 
     'genre', 'box_office', 'mpaa', 'runtime', 'studio', 'writer', 'full_synop', 
-    'all_reviewers_average', 'user_rating', 'year']]
-
+    'all_reviewers_average', 'user_rating', 'year', 'total_nomination_count']]
     
     ratings.user_rating = ratings.user_rating.astype(str)
     ratings.user_rating = ratings.user_rating.apply(lambda x: x.split('/')[0])
@@ -62,17 +63,17 @@ def clean_csv(csv_file_name):
     ratings.box_office = ratings.box_office.fillna(-1)
     ratings.box_office = ratings.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
 
-    ratings = ratings[['tconst', 'averageRating', 'title',
+    ratings = ratings[['top3actors', 'short_syn', 'poster_url','tconst', 'averageRating', 'title',
        'box_office', 'mpaa', 'runtime', 'studio', 'full_synop',
        'all_reviewers_average', 'user_rating', 'year', 'genre1', 'genre2',
-       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3']]
+       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3','total_nomination_count']]
 
-    ratings.columns = ['movie_id', 'imdb_score', 'title',
-       'box_office', 'mpaa', 'runtime', 'studio', 'full_synop',
+    ratings.columns = ['top3actors', 'short_synopsis', 'poster_url', 'movie_id', 'imdb_score', 'title',
+       'box_office', 'mpaa', 'runtime', 'studio', 'full_synopsis',
        'critics_score', 'audience_score', 'year', 'genre1', 'genre2',
-       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3']
+       'genre3', 'director1', 'director2', 'writer1', 'writer2', 'writer3', 'oscars_nomination_count']
 
-    ratings.to_csv('cleaned_matches.csv', index = False)
+    ratings.to_csv('database.csv', index = False)
 
     return ratings
 
@@ -93,7 +94,7 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('complete.db')
+        connection = sqlite3.connect('updated_complete.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         params = get_where_params(ui_dict)[1]
@@ -141,12 +142,12 @@ def get_select(ui_dict):
     current_SELECT = ['ratings.title', 'ratings.critics_score', 'ratings.audience_score', 'ratings.box_office',
                       'ratings.director1']
     actual_SELECT = ['ratings.title', 'ratings.genre1', 'ratings.genre2', 'ratings.genre3', 'ratings.director1',
-                     'ratings.writer1', 'ratings.top_actors', 'ratings.critics_score', 'ratings.audience_score', 
-                     'ratings.imdb_score', 'ratings.box_office', 'ratings.poster_url', 'ratings.short_syn', 
-                     'ratings.runtime']
+                     'ratings.writer1', 'ratings.top3actors', 'ratings.critics_score', 'ratings.audience_score', 
+                     'ratings.box_office', 'ratings.poster_url', 'ratings.short_synop', 
+                     'ratings.runtime', 'ratings.mpaa']
     if ui_dict['order_by'] == 'oscars_nominations':
-        current_SELECT.append('oscars.total_nominations')
-    query_SELECT = 'SELECT DISTINCT ' + ', '.join(current_SELECT)
+        actual_SELECT.append('ratings.oscar_nomination_count')
+    query_SELECT = 'SELECT DISTINCT ' + ', '.join(actual_SELECT)
     
     return query_SELECT
 
@@ -154,6 +155,7 @@ def get_select(ui_dict):
 def get_from(ui_dict):
     FROM = ['ratings', 'principal', 'names']
     ON = ['ratings.movie_id = principal.movie_id', 'principal.name_id = names.name_id']
+    '''
 
     if ui_dict['order_by'] == 'oscars_nominations':
         FROM.append(("(SELECT awards.movie, awards_num + acting_num AS total_nominations, awards.year "
@@ -163,6 +165,7 @@ def get_from(ui_dict):
         "FROM acting_nominees GROUP BY acting_nominees.movie, acting_nominees.year) "
         "AS acting_nominees ON awards.movie = acting_nominees.movie) as oscars"))
         ON += ["ratings.title = oscars.movie", "ratings.year = oscars.year"]
+    '''
 
     query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + ' AND '.join(ON)
     return query_FROM
@@ -202,15 +205,12 @@ def get_where_params(ui_dict):
     return query_WHERE, params
 
 def get_orderby(ui_dict):
-    ORDERBY_DICT = {"oscars_nominations": "total_nominations DESC",
+    ORDERBY_DICT = {"oscars_nominations": "ratings.oscar_nomination_count DESC",
                     "critics_score": "ratings.critics_score DESC",
                     "audience_score": "ratings.audience_score DESC",
                     "box_office": "ratings.box_office DESC"}
     
     query_ORDERBY = " ORDER BY " + ORDERBY_DICT[ui_dict['order_by']]
-
-     
-
 
     return query_ORDERBY
 
