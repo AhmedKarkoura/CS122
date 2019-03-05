@@ -8,24 +8,28 @@
 DID THIS TO DATABASE
 
 ALTER TABLE names
-ADD poster_url VARCHAR(1000);
+ADD picture_url VARCHAR(1000);
 '''
 import sqlite3
 import urllib.request
 import bs4
 
-def run(director_name, actor_name, movie_url):
+def run(director_name, top3actors, movie_url):
     # THIS WOULD BE EASIER WITH NAME_ID
-    connection = sqlite3.connect('../../sql_filter/final_complete.db')
+    movie_url = 'https://www.rottentomatoes.com' + movie_url
+    actor_name = top3actors.split('/')[0]
+    connection = sqlite3.connect('final_complete.db')
 
     c = connection.cursor()
     actor_name = "'" + actor_name + "'"
     director_name = "'" + director_name + "'"
 
-    s = 'SELECT poster_url FROM names WHERE name = '
+    s = 'SELECT picture_url FROM names WHERE name = '
     
-    actor_s = s + actor_name + ''' AND profession LIKE '%actor%' '''
-    director_s = s + director_name + ''' AND profession LIKE '%director%' '''
+    #actor_s = s + actor_name + ''' AND profession LIKE '%actor%' '''
+    actor_s = s + actor_name
+    director_s = s + director_name
+    #director_s = s + director_name + ''' AND profession LIKE '%director%' '''
 
 
     actor_r = c.execute(actor_s)
@@ -37,14 +41,15 @@ def run(director_name, actor_name, movie_url):
     if not actor_url and not director_url:
         director_url, actor_url = scrape(movie_url)
 
-        s = 'UPDATE names SET poster_url = ' + actor_url
-        s += ' WHERE name = ' + actor_name + ''' AND profession LIKE '%actor%' '''
+        s = 'UPDATE names SET picture_url = ' + actor_url
+        #s += ' WHERE name = ' + actor_name + ''' AND profession LIKE '%actor%' '''
+        s += ' WHERE name = ' + actor_name
 
         c.execute(s)
 
-        s = 'UPDATE names SET poster_url = ' + director_url
-        s += ' WHERE name = ' + director_name + ''' AND profession LIKE '%director%' '''
-
+        s = 'UPDATE names SET picture_url = ' + director_url
+        #s += ' WHERE name = ' + director_name + ''' AND profession LIKE '%director%' '''
+        s += ' WHERE name = ' + director_name    
         c.execute(s)
 
     connection.close()

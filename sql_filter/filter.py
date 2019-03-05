@@ -152,6 +152,7 @@ def find_movies(ui_dict):
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
         connection.create_function("format_genre", 1, format_genre)
+        connection.create_function("get_people_pics", 3, actor_director_posters.run)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
@@ -218,7 +219,8 @@ def get_select(ui_dict):
                      "ratings.audience_score||' out of 5' AS audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
                      "ratings.poster_url", "ratings.short_synop", 
-                     "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
+                     "ratings.runtime||' minutes' AS runtime", "ratings.mpaa",
+                     "get_people_pics(ratings.director1, ratings.top3actors, ratings.url) AS pics"]
     if ui_dict['order_by'] == "oscars_nominations":
         actual_SELECT.append("ratings.oscar_nomination_count||' nominations'"\
                              + " AS oscars_nominations")
