@@ -21,7 +21,7 @@ from sklearn.tree import export_graphviz
 
 
 def setup():
-    matches = pd.read_csv('../../sql_filter/mergedallpluscount.csv')
+    matches = pd.read_csv('../../sql_filter/merged_oscar_count.csv')
 
     matches = matches.replace('\\N', '')
 
