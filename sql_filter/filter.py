@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from fuzzywuzzy import fuzz
 import csv
-import actor_director_posters
+#import actor_director_posters
 
 def merge(movie_level_csv, all_page_csv):
     '''
@@ -152,7 +152,8 @@ def find_movies(ui_dict):
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
         connection.create_function("format_genre", 1, format_genre)
-        connection.create_function("get_people_pics", 1, actor_director_posters.get_picture_url)
+        connection.create_function("format_poster_url", 1, format_poster_url)
+        #connection.create_function("get_people_pics", 1, actor_director_posters.get_picture_url)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
@@ -178,6 +179,10 @@ def format_box_office(box_office):
 def format_top3actors(top3actors):
     top3actors = top3actors.split('/') 
     return '\n'.join(top3actors)
+
+def format_poster_url(poster_url):
+    img_url = "<img src =" + "'" + poster_url + "'>"
+    return img_url 
 
 def get_header(cursor):
     '''
@@ -218,9 +223,9 @@ def get_select(ui_dict):
                      "ratings.critics_score||' out of 10' AS critics_score", 
                      "ratings.audience_score||' out of 5' AS audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
-                     "ratings.poster_url", "ratings.short_synop", 
-                     "ratings.runtime||' minutes' AS runtime", "ratings.mpaa",
-                     "get_people_pics(ratings.url) AS pics"]
+                     "format_poster_url(ratings.poster_url) AS poster_url", "ratings.short_synop", 
+                     "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
+                     #"get_people_pics(ratings.url) AS pics"]
     if ui_dict['order_by'] == "oscars_nominations":
         actual_SELECT.append("ratings.oscar_nomination_count||' nominations'"\
                              + " AS oscars_nominations")
