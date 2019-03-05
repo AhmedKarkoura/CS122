@@ -19,6 +19,7 @@ CREATE TABLE acting_nominees(
 CREATE TABLE ratings (
     top3actors VARCHAR(1024),
     short_synop VARCHAR (1024),
+    url VARCHAR (1024),
     poster_url VARCHAR (1024),
     movie_id VARCHAR(50),
     imdb_score int,
