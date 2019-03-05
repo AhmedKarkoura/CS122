@@ -24,7 +24,7 @@ def run(director_name, top3actors, movie_url):
     actor_name = "'" + actor_name + "'"
     director_name = "'" + director_name + "'"
 
-    s = 'SELECT picture_url FROM names WHERE name = '
+    s = 'SELECT names.picture_url FROM names WHERE name = '
     
     #actor_s = s + actor_name + ''' AND profession LIKE '%actor%' '''
     actor_s = s + actor_name
@@ -33,7 +33,7 @@ def run(director_name, top3actors, movie_url):
 
 
     actor_r = c.execute(actor_s)
-    director_r = c.execute(actor_s)
+    director_r = c.execute(director_s)
 
     actor_url = actor_r.fetchall()
     director_url = director_r.fetchall()
@@ -41,21 +41,20 @@ def run(director_name, top3actors, movie_url):
     if not actor_url and not director_url:
         director_url, actor_url = scrape(movie_url)
 
-        s = 'UPDATE names SET picture_url = ' + actor_url
+        s = 'UPDATE names SET names.picture_url = ' + actor_url
         #s += ' WHERE name = ' + actor_name + ''' AND profession LIKE '%actor%' '''
-        s += ' WHERE name = ' + actor_name
+        s += ' WHERE names.name = ' + actor_name
 
         c.execute(s)
 
-        s = 'UPDATE names SET picture_url = ' + director_url
+        s = 'UPDATE names SET names.picture_url = ' + director_url
         #s += ' WHERE name = ' + director_name + ''' AND profession LIKE '%director%' '''
-        s += ' WHERE name = ' + director_name    
+        s += ' WHERE names.name = ' + director_name    
         c.execute(s)
 
     connection.close()
 
     return director_url, actor_url
-
 
 def scrape(movie_url):
     r = urllib.request.urlopen(movie_url)
@@ -82,6 +81,29 @@ def scrape(movie_url):
     director_url = director_url[:len(director_url) - 2]
 
     return director_url, actor_url
+
+def get_picture_url(movie_url):
+    actor_query = 'SELECT ratings.actor_pic_url FROM ratings WHERE ratings.url = ' + "'" + movie_url + "'"
+    director_query = 'SELECT ratings.director_pic_url FROM ratings WHERE ratings.url = ' + "'" + movie_url + "'"
+
+    connection = sqlite3.connect('final_complete.db')
+    c = connection.cursor() 
+    actor_r = c.execute(actor_query)
+    director_r = c.execute(director_query)
+    actor_pic_url = actor_r.fetchall()[0][0]
+    director_pic_url = director_r.fetchall()
+
+    if not actor_pic_url and not director_pic_url:
+        director_pic_url, actor_pic_url = scrape('https://www.rottentomatoes.com/' + movie_url)
+        update_pics_query = "UPDATE ratings SET actor_pic_url = " + "'" + actor_pic_url + "'" \
+                           ", director_pic_url = " + "'" + director_pic_url + "'" + \
+                           ' WHERE ratings.url = ' + "'" + movie_url + "'"
+        c.execute(update_pics_query)
+
+    connection.close()
+
+    return actor_pic_url, director_pic_url
+
 
 
 
