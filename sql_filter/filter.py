@@ -97,6 +97,9 @@ def find_movies(ui_dict):
         connection = sqlite3.connect('updated_complete.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
+        connection.create_function("format_box_office", 1, format_box_office)
+        connection.create_function("format_top3actors", 1, format_top3actors)
+        connection.create_function("format_genre", 1, format_genre)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
@@ -107,6 +110,21 @@ def find_movies(ui_dict):
         else:
             return (get_header(r), movies)
 
+def format_genre(genre):
+    if not genre:
+        return "N/A"
+    else: 
+        return genre
+
+def format_box_office(box_office):
+    if box_office == '-1':
+        return "Not Available"
+    else: 
+        return "$" + "{:,}".format(int(box_office))
+
+def format_top3actors(top3actors):
+    top3actors = top3actors.split('/') 
+    return '\n'.join(top3actors)
 
 def get_header(cursor):
     '''
@@ -139,14 +157,12 @@ def get_query(ui_dict):
     return QUERY
 
 def get_select(ui_dict):
-    current_SELECT = ['ratings.title', 'ratings.critics_score', 'ratings.audience_score', 'ratings.box_office',
-                      'ratings.director1']
-    actual_SELECT = ['ratings.title', 'ratings.genre1', 'ratings.genre2', 'ratings.genre3', 'ratings.director1',
-                     'ratings.writer1', 'ratings.top3actors', 'ratings.critics_score', 'ratings.audience_score', 
-                     'ratings.box_office', 'ratings.poster_url', 'ratings.short_synop', 
-                     'ratings.runtime', 'ratings.mpaa']
-    if ui_dict['order_by'] == 'oscars_nominations':
-        actual_SELECT.append('ratings.oscar_nomination_count')
+    actual_SELECT = ["ratings.title", "ratings.genre1", "format_genre(ratings.genre2)", "format_genre(ratings.genre3)", "ratings.director1",
+                     "ratings.writer1", "format_top3actors(ratings.top3actors)", "ratings.critics_score||' out of 10'", "ratings.audience_score||' out of 5'", 
+                     "format_box_office(ratings.box_office)", "ratings.poster_url", "ratings.short_synop", 
+                     "ratings.runtime||' minutes'", "ratings.mpaa"]
+    if ui_dict['order_by'] == "oscars_nominations":
+        actual_SELECT.append("ratings.oscar_nomination_count||' nominations'")
     query_SELECT = 'SELECT DISTINCT ' + ', '.join(actual_SELECT)
     
     return query_SELECT
@@ -216,7 +232,7 @@ def get_orderby(ui_dict):
 
 TEST_2 = {'actor': 'emma stone , matt damon',  
           'director': 'woody allen, damien chazelle',
-          'order_by': 'oscars_nominations',
+          'order_by': 'box_office',
           'genre': 'Drama'}
 
 TEST_0 = {'actor': "emma stone",
