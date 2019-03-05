@@ -90,10 +90,10 @@ def get_picture_url(movie_url):
     c = connection.cursor() 
     actor_r = c.execute(actor_query)
     director_r = c.execute(director_query)
-    actor_pic_url = actor_r.fetchall()[0][0]
+    actor_pic_url = actor_r.fetchall()
     director_pic_url = director_r.fetchall()
 
-    if not actor_pic_url and not director_pic_url:
+    if not actor_pic_url or not director_pic_url:
         director_pic_url, actor_pic_url = scrape('https://www.rottentomatoes.com/' + movie_url)
         update_pics_query = "UPDATE ratings SET actor_pic_url = " + "'" + actor_pic_url + "'" \
                            ", director_pic_url = " + "'" + director_pic_url + "'" + \
@@ -103,8 +103,6 @@ def get_picture_url(movie_url):
     connection.close()
 
     return actor_pic_url, director_pic_url
-
-
 
 
 
