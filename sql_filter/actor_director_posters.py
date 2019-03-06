@@ -9,6 +9,9 @@ import urllib.request
 import bs4
 import csv
 
+d = {}
+a = {}
+
 def update_table():
     connection = sqlite3.connect('final_complete.db')
     c = connection.cursor()
@@ -18,22 +21,24 @@ def update_table():
     r = c.execute(s)
     urls = [tup[0] for tup in r.fetchall()][1:]
 
-    with open('actor_director_urls.csv', 'wb') as f:
+    with open('actor_director_urls.csv', 'w') as f:
         csvwriter = csv.writer(f, delimiter='|')
         
         for i, url in enumerate(urls):
-            print(i, url[3:])
             director, actor = scrape(url)
             csvwriter.writerow([url, director, actor])
+            print(i, url[3:])
             
-
 def scrape(movie_url):
     r = urllib.request.urlopen('https://www.rottentomatoes.com' + movie_url)
     html = r.read()
     soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
     actor_url = soup.find_all('div', 
-        class_ = 'cast-item media inlineBlock')[0].find('img')['data-src']
+        class_ = 'cast-item media inlineBlock ')[0].find('img')['data-src']
+
+    if actor_url[0] == '/':
+        actor_url = 'https://www.rottentomatoes.com' + actor_url
 
     for li in soup.find_all('li', 'meta-row clearfix'):
         label, actual = li.find_all('div')
@@ -43,13 +48,25 @@ def scrape(movie_url):
 
     url = 'https://www.rottentomatoes.com/' + actual.find('a')['href']
 
-    r = urllib.request.urlopen(url)
-    html = r.read()
-    soup = bs4.BeautifulSoup(html, features = 'html5lib')
+    if d.get(url):
+        director_url = d.get(url)
 
-    ## DIRECTORS ARE INCONSISTENT, NEED TO FIGURE OUT NEW WAY
-    director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
-    director_url = director_url[:len(director_url) - 2]
+    else:
+        r = urllib.request.urlopen(url)
+        html = r.read()
+        soup = bs4.BeautifulSoup(html, features = 'html5lib')
+
+        if soup.find('div', class_ = 'celebHeroImage'):
+            director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
+            director_url = director_url[:len(director_url) - 2]
+
+        else:
+            director_url = soup.find('img', class_ = 'posterImage js-lazyLoad').attrs['data-src']
+
+        if director_url[0] == '/':
+            director_url = 'https://www.rottentomatoes.com' + director_url
+
+        d[url] = director_url
 
     return director_url, actor_url
 
