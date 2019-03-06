@@ -151,8 +151,3 @@ def classifications():
         print('RF R2: ', r2_score(y_test, y_pred))
         print('RF SCORE: ', rf.score(X_test, y_test))
         print()
-
-
-
-
-
