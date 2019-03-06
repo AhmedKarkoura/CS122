@@ -5,59 +5,41 @@ import pandas as pd
 import numpy as np
 import os
 import csv
+import sqlite3
+from fuzzywuzzy import fuzz
 
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.tree import DecisionTreeClassifier
+#from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, roc_auc_score
-
-import pydotplus
-from sklearn.externals.six import StringIO  
-from IPython.display import Image  
-from sklearn.tree import export_graphviz
-
+#from sklearn.linear_model import LinearRegression
+#from sklearn.metrics import r2_score, roc_auc_score
 
 def setup():
-    matches = pd.read_csv('../../sql_filter/merged_oscar_count.csv')
+    matches = pd.read_csv('../../sql_filter/database.csv')
 
     matches = matches.replace('\\N', '')
-
     matches = matches.replace([np.nan, 'nan', 'NaN'], -1)
-    matches.user_rating = matches.user_rating.astype(str)
-    matches.user_rating = matches.user_rating.apply(lambda x: x.split('/')[0])
 
-    matches = matches.drop(['startYear', 'runtimeMinutes', 'stream_date',
-        'writers', 'full_synop', 'num_all_fresh', 'num_all_rotten', 'num_top_fresh',
-        'num_top_rotten', 'genre', 'primaryTitle', 'writer', 'directors_x', 'user_rating', 'num_users',
-        'num_top_reviewers', 'num_all_reviewers', 'tconst', 'movie_id', 'title', 'year',
-        'numVotes', 'top_reviewers_average', 'theater_date', 'all_page_runtime', 'all_page_title',
-        'all_page_title2', 'short_syn', 'poster_url', 'isAdult', 'other_awards_count',
-        'acting_count', 'total_nomination_count', 'movie'], axis = 1)
-
-    # matches.theater_date = matches.theater_date.astype(str).apply(lambda x: x[-4:]).astype(int)
+    matches = matches.drop(['short_synopsis', 'url', 'poster_url', 'movie_id',
+        'title', 'full_synopsis', 'critics_score', 'audience_score', 'year',
+        'genre2', 'genre3', 'oscars_nomination_count', 'imdb_score',
+        'writer1', 'writer2', 'writer3'], 
+        axis = 1)
 
     for i in range(3):
-        matches['genre' + str(i)] = matches.genres.apply(lambda x: split_field(x, i, ','))
+        matches['actor' + str(i+1)] = matches.top3actors.apply(lambda x: split_field(x, i, '/'))
 
-    for i in range(2):
-        matches['director' + str(i)] = matches.directors_y.astype(str).apply(lambda x: split_field(x, i, ','))
-
-    for i in range(3):
-        matches['actor' + str(i)] = matches.top3actors.astype(str).apply(lambda x: split_field(x, i, '/'))
-    ## STILL NEED TO DO THE SAME FOR ACTORS, mpaa?
-
-    matches = matches.drop(['genres', 'directors_y', 'top3actors'], axis = 1)
+    matches = matches.drop(['top3actors'], axis = 1)
     matches.box_office = matches.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
 
-    matches['mpaa'] = matches.mpaa.astype(str).apply(lambda x: x.split(' (')[0])
-    cat_cols = ['genre0', 'genre1', 'genre2', 'director0', 'director1', 'studio', 
-        'averageRating', 'all_reviewers_average', 'actor0', 'actor1', 'actor2', 'mpaa']
+    cat_cols = ['genre1', 'director1', 'director2', 'studio', 'actor1', 
+        'actor2', 'actor3', 'mpaa']
     
-
     labelers = {}
+
+    return matches
 
     for col in cat_cols:
         matches[col] = matches[col].astype(str)
@@ -67,16 +49,14 @@ def setup():
 
         labelers[col] = le
 
-    ys = ['box_office', 'averageRating', 'all_reviewers_average']
+    dt = DecisionTreeRegressor()
+    dt.fit(matches.drop('box_office', axis = 1), matches.box_office)
 
-    rf = RandomForestClassifier(n_estimators = 100)
-    rf.fit(matches.drop(ys, axis = 1), matches.box_office)
-
-    return matches, labelers, rf
+    return matches, labelers, dt
 
 def split_field(l, i, splitter):
-    l = l.split(splitter)
     try:
+        l = l.split(splitter)
         val = l[i]
     except Exception as e:
         val = ''
@@ -84,17 +64,57 @@ def split_field(l, i, splitter):
     return val
 
 def classify(ui_dict):
-    matches, labelers, rf = setup()
+    matches, labelers, dt = setup()
 
-    for key, val in ui_dict.items():
-        encoder = labelers.get(key)
+    for i in range(3):
+        ui_dict['actor' + str(i + 1)] = split_field(ui_dict.get('actor'), 
+            i, ', ')
 
-        ui_dict[key] = encoder.transform(val)
+    for i in range(2):
+        ui_dict['director' + str(i + 1)] = split_field(ui_dict.get('director'), 
+            i, ', ')
 
-    X_test = pd.DataFrame(ui_dict)
+    ui_dict['genre1'] = ui_dict.get('genre')
 
-    return rf.predict(X_test)
+    cols = ['mpaa', 'runtime', 'studio', 'genre1', 'director1', 'director2',
+        'actor1', 'actor2', 'actor3']
 
+    row = [ui_dict.get(col) for col in cols]
+    row = ensure_accuracy(row)
+
+    final_row = []
+    for i, val in enumerate(row):
+        if i != 1:
+            encoder = labelers.get(cols[i])
+            val = encoder.transform([val])[0]
+
+        row[i] = val
+
+    X_test = pd.DataFrame([row], columns = cols)
+    prediction = dt.predict(X_test)
+
+    return '${:,.2f}'.format(prediction[0])
+
+def ensure_accuracy(row):
+    check_row = row[4:]
+
+    connection = sqlite3.connect('../../sql_filter/final_complete.db')
+    connection.create_function("fuzz", 2, fuzz.ratio)
+    c = connection.cursor()
+
+    for i, item in enumerate(check_row):
+        s = 'SELECT name, fuzz(name, ?) as f from names ORDER BY f DESC LIMIT 1'
+
+        if item != '':
+            r = c.execute(s, (item,))
+            check_row[i] = r.fetchall()[0][0]
+
+    row[4:] = check_row
+
+    return row
+
+
+### NO LONGER NECESSARY###
 def classifications():
     matches, labelers = setup()
 
@@ -131,9 +151,6 @@ def classifications():
         print('RF R2: ', r2_score(y_test, y_pred))
         print('RF SCORE: ', rf.score(X_test, y_test))
         print()
-
-
-
 
 
 
