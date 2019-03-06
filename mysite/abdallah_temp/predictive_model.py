@@ -5,14 +5,16 @@ import pandas as pd
 import numpy as np
 import os
 import csv
+import sqlite3
+from fuzzywuzzy import fuzz
 
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.tree import DecisionTreeClassifier
+#from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, roc_auc_score
+#from sklearn.linear_model import LinearRegression
+#from sklearn.metrics import r2_score, roc_auc_score
 
 def setup():
     matches = pd.read_csv('../../sql_filter/database.csv')
@@ -37,6 +39,8 @@ def setup():
     
     labelers = {}
 
+    return matches
+
     for col in cat_cols:
         matches[col] = matches[col].astype(str)
         le = preprocessing.LabelEncoder()
@@ -45,11 +49,10 @@ def setup():
 
         labelers[col] = le
 
-    print('done cleaning, now building RandomForestClassifier')
-    rf = RandomForestClassifier(n_estimators = 50)
-    rf.fit(matches.drop('box_office', axis = 1), matches.box_office)
+    dt = DecisionTreeRegressor()
+    dt.fit(matches.drop('box_office', axis = 1), matches.box_office)
 
-    return matches, labelers, rf
+    return matches, labelers, dt
 
 def split_field(l, i, splitter):
     try:
@@ -61,24 +64,54 @@ def split_field(l, i, splitter):
     return val
 
 def classify(ui_dict):
-    matches, labelers, rf = setup()
+    matches, labelers, dt = setup()
 
     for i in range(3):
-        ui_dict['actor' + str(i)] = split_field(ui_dict.get('actor'), i, ',')
+        ui_dict['actor' + str(i + 1)] = split_field(ui_dict.get('actor'), 
+            i, ', ')
 
     for i in range(2):
-        ui_dict['director' + str(i)] = split_field(ui_dict.get('director'), i, ',')
+        ui_dict['director' + str(i + 1)] = split_field(ui_dict.get('director'), 
+            i, ', ')
 
+    ui_dict['genre1'] = ui_dict.get('genre')
 
+    cols = ['mpaa', 'runtime', 'studio', 'genre1', 'director1', 'director2',
+        'actor1', 'actor2', 'actor3']
 
+    row = [ui_dict.get(col) for col in cols]
+    row = ensure_accuracy(row)
 
-    for key, val in ui_dict.items():
-        encoder = labelers.get(key)
-        ui_dict[key] = encoder.transform(val)
+    final_row = []
+    for i, val in enumerate(row):
+        if i != 1:
+            encoder = labelers.get(cols[i])
+            val = encoder.transform([val])[0]
 
-    X_test = pd.DataFrame(ui_dict)
+        row[i] = val
 
-    return rf.predict(X_test)
+    X_test = pd.DataFrame([row], columns = cols)
+    prediction = dt.predict(X_test)
+
+    return '${:,.2f}'.format(prediction[0])
+
+def ensure_accuracy(row):
+    check_row = row[4:]
+
+    connection = sqlite3.connect('../../sql_filter/final_complete.db')
+    connection.create_function("fuzz", 2, fuzz.ratio)
+    c = connection.cursor()
+
+    for i, item in enumerate(check_row):
+        s = 'SELECT name, fuzz(name, ?) as f from names ORDER BY f DESC LIMIT 1'
+
+        if item != '':
+            r = c.execute(s, (item,))
+            check_row[i] = r.fetchall()[0][0]
+
+    row[4:] = check_row
+
+    return row
 
 def classifications():
     matches, labelers = setup()
@@ -116,18 +149,6 @@ def classifications():
         print('RF R2: ', r2_score(y_test, y_pred))
         print('RF SCORE: ', rf.score(X_test, y_test))
         print()
-
-
-# args_to_ui = {
-#   "genre": "Musical & Performing Arts",
-#   "director": "Christopher Nolan",
-#   "studio": "Walt Disney Pictures",
-#   "order_by": "box_office",
-#   "mpaa": "PG-13",
-#   "runtime": 150,
-#   "actor": "Johnny Depp"
-# }
-
 
 
 
