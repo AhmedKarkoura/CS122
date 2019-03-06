@@ -12,18 +12,19 @@ def get_person_posters(movie_url):
     connection = sqlite3.connect('final_complete.db')
     c = connection.cursor()
 
-    s = 'SELECT actor_pic_url, director_pic_url FROM ratings WHERE url == "' + movie_url + '"'
-    actor_url, director_url = c.execute(s).fetchall()[0]
+    s = 'SELECT actor_pic_url, director_pic_url, director1 FROM ratings WHERE url == "' + movie_url + '"'
+    actor_url, director_url, director = c.execute(s).fetchall()[0]
 
     if not director_url:
         director_s = '''SELECT a.director_pic_url 
             FROM ratings AS a join ratings AS b
-            WHERE a.director1 == b.director1
+            WHERE b.director1 == "''' + director + '''" 
+            AND a.director1 == b.director1
             AND a.url != b.url
-            ORDER BY a.director_pic_url DESC
+            ORDER BY b.director_pic_url DESC
             LIMIT 1'''
 
-        director_url = c.execute(director_s).fetchall()[0][0]
+        director_url = c.execute(director_s).fetchall()
 
     if not actor_url or not director_url:
         if not director_url:
