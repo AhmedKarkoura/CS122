@@ -14,49 +14,27 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, roc_auc_score
 
-import pydotplus
-from sklearn.externals.six import StringIO  
-from IPython.display import Image  
-from sklearn.tree import export_graphviz
-
-
 def setup():
-    matches = pd.read_csv('../../sql_filter/merged_oscar_count.csv')
+    matches = pd.read_csv('../../sql_filter/database.csv')
 
     matches = matches.replace('\\N', '')
-
     matches = matches.replace([np.nan, 'nan', 'NaN'], -1)
-    matches.user_rating = matches.user_rating.astype(str)
-    matches.user_rating = matches.user_rating.apply(lambda x: x.split('/')[0])
 
-    matches = matches.drop(['startYear', 'runtimeMinutes', 'stream_date',
-        'writers', 'full_synop', 'num_all_fresh', 'num_all_rotten', 'num_top_fresh',
-        'num_top_rotten', 'genre', 'primaryTitle', 'writer', 'directors_x', 'user_rating', 'num_users',
-        'num_top_reviewers', 'num_all_reviewers', 'tconst', 'movie_id', 'title', 'year',
-        'numVotes', 'top_reviewers_average', 'theater_date', 'all_page_runtime', 'all_page_title',
-        'all_page_title2', 'short_syn', 'poster_url', 'isAdult', 'other_awards_count',
-        'acting_count', 'total_nomination_count', 'movie'], axis = 1)
-
-    # matches.theater_date = matches.theater_date.astype(str).apply(lambda x: x[-4:]).astype(int)
+    matches = matches.drop(['short_synopsis', 'url', 'poster_url', 'movie_id',
+        'title', 'full_synopsis', 'critics_score', 'audience_score', 'year',
+        'genre2', 'genre3', 'oscars_nomination_count', 'imdb_score',
+        'writer1', 'writer2', 'writer3'], 
+        axis = 1)
 
     for i in range(3):
-        matches['genre' + str(i)] = matches.genres.apply(lambda x: split_field(x, i, ','))
+        matches['actor' + str(i+1)] = matches.top3actors.apply(lambda x: split_field(x, i, '/'))
 
-    for i in range(2):
-        matches['director' + str(i)] = matches.directors_y.astype(str).apply(lambda x: split_field(x, i, ','))
-
-    for i in range(3):
-        matches['actor' + str(i)] = matches.top3actors.astype(str).apply(lambda x: split_field(x, i, '/'))
-    ## STILL NEED TO DO THE SAME FOR ACTORS, mpaa?
-
-    matches = matches.drop(['genres', 'directors_y', 'top3actors'], axis = 1)
+    matches = matches.drop(['top3actors'], axis = 1)
     matches.box_office = matches.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
 
-    matches['mpaa'] = matches.mpaa.astype(str).apply(lambda x: x.split(' (')[0])
-    cat_cols = ['genre0', 'genre1', 'genre2', 'director0', 'director1', 'studio', 
-        'averageRating', 'all_reviewers_average', 'actor0', 'actor1', 'actor2', 'mpaa']
+    cat_cols = ['genre1', 'director1', 'director2', 'studio', 'actor1', 
+        'actor2', 'actor3', 'mpaa']
     
-
     labelers = {}
 
     for col in cat_cols:
@@ -67,16 +45,15 @@ def setup():
 
         labelers[col] = le
 
-    ys = ['box_office', 'averageRating', 'all_reviewers_average']
-
-    rf = RandomForestClassifier(n_estimators = 100)
-    rf.fit(matches.drop(ys, axis = 1), matches.box_office)
+    print('done cleaning, now building RandomForestClassifier')
+    rf = RandomForestClassifier(n_estimators = 50)
+    rf.fit(matches.drop('box_office', axis = 1), matches.box_office)
 
     return matches, labelers, rf
 
 def split_field(l, i, splitter):
-    l = l.split(splitter)
     try:
+        l = l.split(splitter)
         val = l[i]
     except Exception as e:
         val = ''
@@ -86,9 +63,17 @@ def split_field(l, i, splitter):
 def classify(ui_dict):
     matches, labelers, rf = setup()
 
+    for i in range(3):
+        ui_dict['actor' + str(i)] = split_field(ui_dict.get('actor'), i, ',')
+
+    for i in range(2):
+        ui_dict['director' + str(i)] = split_field(ui_dict.get('director'), i, ',')
+
+
+
+
     for key, val in ui_dict.items():
         encoder = labelers.get(key)
-
         ui_dict[key] = encoder.transform(val)
 
     X_test = pd.DataFrame(ui_dict)
@@ -133,6 +118,15 @@ def classifications():
         print()
 
 
+# args_to_ui = {
+#   "genre": "Musical & Performing Arts",
+#   "director": "Christopher Nolan",
+#   "studio": "Walt Disney Pictures",
+#   "order_by": "box_office",
+#   "mpaa": "PG-13",
+#   "runtime": 150,
+#   "actor": "Johnny Depp"
+# }
 
 
 
