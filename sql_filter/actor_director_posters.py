@@ -4,15 +4,54 @@
 #     - Else: Find photo of first person in the actors, and return that poster url, as well as saving it in the db
 
 
-'''
-DID THIS TO DATABASE
-
-ALTER TABLE names
-ADD picture_url VARCHAR(1000);
-'''
 import sqlite3
 import urllib.request
 import bs4
+import csv
+
+def update_table():
+    connection = sqlite3.connect('final_complete.db')
+    c = connection.cursor()
+
+    s = 'SELECT url FROM ratings'
+
+    r = c.execute(s)
+    urls = [tup[0] for tup in r.fetchall()][1:]
+
+    with open('actor_director_urls.csv', 'wb') as f:
+        csvwriter = csv.writer(f, delimiter='|')
+        
+        for i, url in enumerate(urls):
+            print(i, url[3:])
+            director, actor = scrape(url)
+            csvwriter.writerow([url, director, actor])
+            
+
+def scrape(movie_url):
+    r = urllib.request.urlopen('https://www.rottentomatoes.com' + movie_url)
+    html = r.read()
+    soup = bs4.BeautifulSoup(html, features = 'html5lib')
+
+    actor_url = soup.find_all('div', 
+        class_ = 'cast-item media inlineBlock')[0].find('img')['data-src']
+
+    for li in soup.find_all('li', 'meta-row clearfix'):
+        label, actual = li.find_all('div')
+
+        if label.text.strip() == 'Directed By:':
+            break
+
+    url = 'https://www.rottentomatoes.com/' + actual.find('a')['href']
+
+    r = urllib.request.urlopen(url)
+    html = r.read()
+    soup = bs4.BeautifulSoup(html, features = 'html5lib')
+
+    ## DIRECTORS ARE INCONSISTENT, NEED TO FIGURE OUT NEW WAY
+    director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
+    director_url = director_url[:len(director_url) - 2]
+
+    return director_url, actor_url
 
 def run(director_name, top3actors, movie_url):
     # THIS WOULD BE EASIER WITH NAME_ID
@@ -53,32 +92,6 @@ def run(director_name, top3actors, movie_url):
         c.execute(s)
 
     connection.close()
-
-    return director_url, actor_url
-
-def scrape(movie_url):
-    r = urllib.request.urlopen(movie_url)
-    html = r.read()
-    soup = bs4.BeautifulSoup(html, features = 'html5lib')
-
-    actor_url = soup.find_all('div', 
-        class_ = 'cast-item media inlineBlock')[0].find('img')['data-src']
-
-    for li in soup.find_all('li', 'meta-row clearfix'):
-        label, actual = li.find_all('div')
-
-        if label.text.strip() == 'Directed By:':
-            break
-
-    url = 'https://www.rottentomatoes.com/'
-    url += actual.find('a')['href']
-
-    r = urllib.request.urlopen(url)
-    html = r.read()
-    soup = bs4.BeautifulSoup(html, features = 'html5lib')
-
-    director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
-    director_url = director_url[:len(director_url) - 2]
 
     return director_url, actor_url
 

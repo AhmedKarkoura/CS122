@@ -113,6 +113,8 @@ def ensure_accuracy(row):
 
     return row
 
+
+### NO LONGER NECESSARY###
 def classifications():
     matches, labelers = setup()
 
