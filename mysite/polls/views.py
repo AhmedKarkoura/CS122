@@ -5,11 +5,8 @@ import traceback
 import sys
 import csv
 import os
-
 from functools import reduce
 from operator import and_
-
-from django.shortcuts import render
 from django import forms
 from filter import find_movies
 
@@ -66,12 +63,13 @@ class SearchForm(forms.Form):
         help_text='e.g. Christopher Nolan or e.g. Christopher Nolan, Ron Howard',
         required=False)
     studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=False)
-    rating = forms.ChoiceField(label='Rating', choices=RATINGS, required=False)
+    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=False)
 
     runtime = forms.IntegerField(label='Runtime', 
         help_text='Maximum duration of movie in minutes',
         required=False)
     order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=True)
+    #ADD help_text about the order_by oscars
 
     show_args = forms.BooleanField(label='Show args_to_ui',
                                    required=False)
@@ -156,7 +154,12 @@ def home(request):
 
     else:
         columns, result = res
-        columns = ['Title','Critics Score', "Audience Score", 'Box Office', 'Director']
+        columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
+         'Top 3 Actors', 'Critics Score', "Audience Score", 'Box Office', 'Poster', 
+         'Short Synopsis', 'Runtime', 'MPAA Rating']
+
+        # for result in results:
+        #     result[6] = result[6].split('/')
 
         # Wrap in tuple if result is not already
         if result and isinstance(result[0], str):
