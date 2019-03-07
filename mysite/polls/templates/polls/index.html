@@ -34,7 +34,6 @@
         {% endif %}
 
 
-
         <div class="frame">
             {% if result != None %}
             <div class="results">
@@ -43,14 +42,16 @@
                         {% for col in columns %}
                         <th>{{ col }}</th>
                         {% endfor %}
-                        <th>Savings</th>
                     </tr>
                     {% for entry in result %}
                     <tr>
                         {% for col in entry %}
-                        <td>{{ col }}</td>
+                            {% if 'https' in col %}
+                                <td><img src = {{ col }}></td>
+                            {% else %} 
+                                <td>{{ col }}</td>
+                            {% endif %}
                         {% endfor %}
-                        <td><img src=https://resizing.flixster.com/UlYoMfBUoJW05MGy4N2NniHJ6GM=/130x0/v1.bTsxMTIxNTYwNjtqOzE4MDM5OzEyMDA7MTUzNjsyMDQ4></td>
                     </tr>
                     {% endfor %}
                 </table>

@@ -106,7 +106,7 @@ def classify(ui_dict):
 def ensure_accuracy(row):
     check_row = row[4:]
 
-    connection = sqlite3.connect('../sql_filter/final_complete.db')
+    connection = sqlite3.connect('final_complete.db')
     connection.create_function("fuzz", 2, fuzz.ratio)
     c = connection.cursor()
 
