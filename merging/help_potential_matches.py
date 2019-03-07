@@ -65,3 +65,7 @@ rt_same_title_4['writer_1'] = rt_same_title_4['writer'].str.split(', ').str[0]
 more_matches_writer1 = rt_same_title_4.merge(imdb_same_title_4_writers, how='inner', left_on = ['title', 'writer_1'], right_on= ['primaryTitle', 'primaryName'])
 matches_yearminus1 = imdb_same_title.merge(not_matched, left_on = ['primaryTitle', 'yearminus1'], right_on = ['simple_title', 'year'])
 
+# try to match on title, yearplus1, yearminus1
+# try to match on title, rt_director1, rt_director2, rt_director3
+# try to match on title, rt_writer1, rt_writer2, rt_writer3
+# try the same matches on rt_simple_title (remove text in parenthesis)
