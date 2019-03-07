@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from fuzzywuzzy import fuzz
 import csv
-#import actor_director_posters
+import actor_director_posters as adp
 
 def merge(movie_level_csv, all_page_csv):
     '''
@@ -162,7 +162,15 @@ def find_movies(ui_dict):
         if len(movies) == 0:
             return ([],[])
         else:
-            return (get_header(r), movies)
+            final = []
+            for movie in movies:
+                url = movie[-1]
+                movie = tuple(movie[:len(movie)-1])
+                movie += adp.get_person_posters(url)
+
+                final.append(movie)
+            
+            return (get_header(r) + ['hello'], final)
 
 def format_genre(genre):
     if not genre:
@@ -222,9 +230,15 @@ def get_select(ui_dict):
                      "format_top3actors(ratings.top3actors) AS top3actors", 
                      "ratings.critics_score", 
                      "ratings.audience_score", 
+<<<<<<< HEAD
                      "format_box_office(ratings.box_office) AS money", 
                      "ratings.poster_url AS poster_url", "ratings.short_synop", 
                      "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
+=======
+                     "format_box_office(ratings.box_office) AS box_office", 
+                     "ratings.short_synop", "ratings.runtime||' minutes' AS runtime", 
+                     "ratings.mpaa", "ratings.poster_url AS poster_url", "url"]
+>>>>>>> d02d631a115b1a5024074d1207b98e1da3f9b8ab
                      #"get_people_pics(ratings.url) AS pics"]
     if ui_dict['order_by'] == "oscars_nominations":
         actual_SELECT.append("ratings.oscar_nomination_count||' nominations'"\
