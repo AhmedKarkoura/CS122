@@ -14,7 +14,7 @@ def myView(request):
     
     context = {}
     latest_question_list =['http://127.0.0.1:8000/movie_recommendation', 'http://127.0.0.1:8000/model']
-    # context['Movie Recommendation'] = 'http://127.0.0.1:8000/movie_recommendation'
-    # context['Executive Modeling'] = 'http://127.0.0.1:8000/model'
+    context['Movie Recommendation'] = 'http://127.0.0.1:8000/movie_recommendation'
+    context['Executive Modeling'] = 'http://127.0.0.1:8000/model'
     context['latest_question_list'] = latest_question_list
     return render(request, 'homepage/index.html', context)

@@ -27,33 +27,10 @@
         </div>
         {% endif %}
 
-        {% if err %}
-        <div class="error">
-            {{ err|safe }}
-        </div>
-        {% endif %}
-
-
-
         <div class="frame">
             {% if result != None %}
-            <div class="results">
-                <table class="courses">
-                    <tr>
-                        {% for col in columns %}
-                        <th>{{ col }}</th>
-                        {% endfor %}
-                    </tr>
-                    {% for entry in result %}
-                    <tr>
-                        {% for col in entry %}
-                        <td>{{ col }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-            <p class="num_results">Results: {{ num_results }}</p>
+                <p class="result">The result: {{ result }}</p>
+
             {% endif %}
         </div>
     </body>

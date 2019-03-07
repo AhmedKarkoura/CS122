@@ -181,7 +181,7 @@ def format_top3actors(top3actors):
     return '\n'.join(top3actors)
 
 def format_poster_url(poster_url):
-    img_url = "<img src =" + '"' + poster_url + '">'
+    img_url = "<img src=" + '"' + poster_url + '">'
     return img_url 
 
 def get_header(cursor):
@@ -220,10 +220,10 @@ def get_select(ui_dict):
                      "format_genre(ratings.genre3) AS genre3", 
                      "ratings.director1", "ratings.writer1", 
                      "format_top3actors(ratings.top3actors) AS top3actors", 
-                     "ratings.critics_score||' out of 10' AS critics_score", 
-                     "ratings.audience_score||' out of 5' AS audience_score", 
+                     "ratings.critics_score", 
+                     "ratings.audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
-                     "format_poster_url(ratings.poster_url) AS poster_url", "ratings.short_synop", 
+                     "ratings.poster_url AS poster_url", "ratings.short_synop", 
                      "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
                      #"get_people_pics(ratings.url) AS pics"]
     if ui_dict['order_by'] == "oscars_nominations":

@@ -8,7 +8,7 @@ import os
 from functools import reduce
 from operator import and_
 from django import forms
-# from predictive_model import setup, classify 
+from predictive_model import setup, classify 
 
 NOPREF_STR = 'No preference'
 
@@ -55,21 +55,21 @@ ORDER = _build_dropdown(order_by_lst)
 
 class SearchForm(forms.Form):
 
-    genre = forms.ChoiceField(label='Genre', choices=GENRES, required=False)
+    genre = forms.ChoiceField(label='Genre', choices=GENRES, required=True)
     actor = forms.CharField(
         label='Actor/Actress',
         help_text='e.g. Johnny Depp or  e.g. Johnny Depp,Ben Affleck',
-        required=False)
+        required=True)
     director = forms.CharField(
         label='Director',
         help_text='e.g. Christopher Nolan or e.g. Christopher Nolan, Ron Howard',
-        required=False)
-    # studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=False)
-    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=False)
+        required=True)
+    studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=True)
+    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=True)
 
     runtime = forms.IntegerField(label='Runtime', 
         help_text='Maximum duration of movie in minutes',
-        required=False)
+        required=True)
     # order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=True)
     #ADD help_text about the order_by oscars
 
@@ -94,7 +94,7 @@ def home(request):
             genre = form.cleaned_data['genre']
             actor = form.cleaned_data['actor']
             director = form.cleaned_data['director']
-            # studio =  form.cleaned_data['studio']
+            studio =  form.cleaned_data['studio']
             rating = form.cleaned_data['rating']
             runtime = form.cleaned_data['runtime'] 
             # order_by = form.cleaned_data['order_by']
@@ -108,8 +108,8 @@ def home(request):
             if director:
                 args['director'] = director
 
-            # if studio:
-            #     args['studio'] = studio
+            if studio:
+                args['studio'] = studio
 
             if rating:
                 args['mpaa'] = rating
@@ -125,65 +125,46 @@ def home(request):
 
 
             try:
-                res = find_movies(args)
+                res = classify(args)
             except Exception as e:
                 print('Exception caught')
-                bt = traceback.format_exception(*sys.exc_info()[:3])
-                context['err'] = """
-                An exception was thrown in find_movies:
-                <pre>{}
-{}</pre>
-                """.format(e, '\n'.join(bt))
-
-                res = None
     else:
         form = SearchForm()
 
     # Handle different responses of res
-    if res is None:
-        context['result'] = None
+    # if res is None:
+    #     context['result'] = None
     
-    elif isinstance(res, str):
-        context['result'] = None
-        context['err'] = res
-        result = None
+    # elif isinstance(res, str):
+    #     context['result'] = None
+    #     context['err'] = res
+    #     result = None
 
-    elif not _valid_result(res):
-        context['result'] = None
-        context['err'] = ('Return of find_movies has the wrong data type. '
-                          'Should be a tuple of length 4 with one string and '
-                          'three lists.')
+    # elif not _valid_result(res):
+    #     context['result'] = None
+    #     context['err'] = ('Return of find_movies has the wrong data type. '
+    #                       'Should be a tuple of length 4 with one string and '
+    #                       'three lists.')
 
-    else:
-        columns, result = res
-        columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
-        'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
-        'Runtime', 'MPAA Rating']
+    # else:
+    #     columns, result = res
+    #     columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
+    #     'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
+    #     'Runtime', 'MPAA Rating']
 
-        # Wrap in tuple if result is not already
-        if result and isinstance(result[0], str):
-            result = [(r,) for r in result]
+    #     # Wrap in tuple if result is not already
+    #     if result and isinstance(result[0], str):
+    #         result = [(r,) for r in result]
 
-        context['result'] = result
-        context['num_results'] = len(result)
-        context['columns'] = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
-        'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
-        'Runtime', 'MPAA Rating']
+        # context['result'] = res
+        # context['num_results'] = len(res)
+        # context['columns'] = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
+        # 'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
+        # 'Runtime', 'MPAA Rating']
 
+    #context['num_results'] = len(res)
+    context['result'] = res
     context['form'] = form
     return render(request, 'model/index.html', context)
    
-
-def _valid_result(res):
-    """Validate results returned by find_movies."""
-    (HEADER, RESULTS) = [0, 1]
-    n = len(res[HEADER])
-    if not (isinstance(res, (tuple, list)) and
-          len(res) == 2 and
-          isinstance(res[HEADER], (tuple, list)) and
-          isinstance(res[RESULTS], (tuple, list))):
-        return False
-    def _valid_row(row):
-        return isinstance(row, (tuple, list)) and len(row) == n
-    return reduce(and_, (_valid_row(x) for x in res[RESULTS]), True)
 

@@ -153,13 +153,16 @@ def home(request):
                           'three lists.')
 
     else:
-        columns, result = res
-        columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
-         'Top 3 Actors', 'Critics Score', "Audience Score", 'Box Office', 'Poster', 
-         'Short Synopsis', 'Runtime', 'MPAA Rating']
+        result = res[1]
+        if args['order_by'] == 'oscars_nominations':
+            columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
+            'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
+            'Short Synopsis', 'Runtime', 'MPAA Rating','Oscar Nominations' ]
+        else:
+            columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
+             'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
+             'Short Synopsis', 'Runtime', 'MPAA Rating']
 
-        # for result in results:
-        #     result[6] = result[6].split('/')
 
         # Wrap in tuple if result is not already
         if result and isinstance(result[0], str):
