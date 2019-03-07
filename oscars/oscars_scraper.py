@@ -13,6 +13,8 @@ import sqlite3
 import urllib.request
 import requests
 
+urls = ['https://en.wikipedia.org/wiki/Academy_Awards#Current_categories', 'https://variety.com/2019/film/news/2019-oscars-winners-list-academy-awards-1203145638/']
+
 def get_acting_nominees(url):
     nominees = []
     for url in get_category_urls(url)[2:6]:
@@ -78,7 +80,7 @@ def get_nominees(url):
     return nominees
 
 def write_csv(nominees):
-    with open('acting_nominees.csv', 'w') as csv_file:
+    with open('acting_awards.csv', 'w') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(['year', 'category', 'actor/actress','winner', 
                          'movie'])

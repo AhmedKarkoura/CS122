@@ -146,15 +146,14 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('final_complete.db')
+        connection = sqlite3.connect('test.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
         connection.create_function("format_genre", 1, format_genre)
-        connection.create_function("format_poster_url", 1, format_poster_url)
-        connection.create_function("get_actor_pic", 1, actor_director_posters.get_actor_pic_url)
-        connection.create_function("get_director_pic", 1, actor_director_posters.get_director_pic_url)
+        connection.create_function("get_actor_pic", 1, get_actor_pic)
+        connection.create_function("get_director_pic", 1, get_director_pic)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         print(query, params)
@@ -182,9 +181,12 @@ def format_top3actors(top3actors):
     top3actors = top3actors.split('/') 
     return '\n'.join(top3actors)
 
-def format_poster_url(poster_url):
-    img_url = "<img src =" + "'" + poster_url + "'>"
-    return img_url 
+def get_actor_pic(movie_url):
+    return actor_director_posters.get_person_posters(movie_url)[0]
+
+def get_director_pic(movie_url):
+    return actor_director_posters.get_person_posters(movie_url)[1]
+
 
 def get_header(cursor):
     '''
@@ -225,7 +227,7 @@ def get_select(ui_dict):
                      "ratings.critics_score||' out of 10' AS critics_score", 
                      "ratings.audience_score||' out of 5' AS audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
-                     "format_poster_url(ratings.poster_url) AS poster_url", "ratings.short_synop", 
+                     "ratings.poster_url", "ratings.short_synop", 
                      "ratings.runtime||' minutes' AS runtime", "ratings.mpaa",
                      "get_actor_pic(ratings.url)", "get_director_pic(ratings.url)"]
     if ui_dict['order_by'] == "oscars_nominations":
