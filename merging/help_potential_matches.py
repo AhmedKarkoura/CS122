@@ -60,3 +60,7 @@ more_matches_yearminus1 = unmatched_same_title.merge(imdb_same_title, how='inner
 more_matches_yearplus1 = unmatched_same_title.merge(imdb_same_title, how='inner', left_on = ['title', 'year'], right_on = ['primaryTitle', 'yearminus1'])
 more_matches_director1 = rt_same_title3.merge(imdb_same_title3_director, how='inner', left_on = ['title', 'director_1'], right_on= ['primaryTitle', 'primaryName'])
 more_matches_director1 = rt_same_title3.merge(imdb_same_title3_director, how='inner', left_on = ['title', 'director_2'], right_on= ['primaryTitle', 'primaryName'])
+imdb_same_title_4_writers = imdb_same_title_4.merge(names, left_on = 'writer1', right_on = 'nconst')
+rt_same_title_4['writer_1'] = rt_same_title_4['writer'].str.split(', ').str[0]
+more_matches_writer1 = rt_same_title_4.merge(imdb_same_title_4_writers, how='inner', left_on = ['title', 'writer_1'], right_on= ['primaryTitle', 'primaryName'])
+
