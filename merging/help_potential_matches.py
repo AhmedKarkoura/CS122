@@ -30,7 +30,7 @@ imdb_names = pd.read_csv('updated_names.csv')
 
 #find all unmatched movies in rt
 merged = pd.read_csv('final_merged.csv')
-merged = merged[['movie_id','title' ,'directors_y', 'genre','theater_date','stream_date'                                                                 
+merged = merged[['movie_id','title' ,'directors_y', 'genre','theater_date','stream_date',                                                                
     'box_office','mpaa','runtime', 'studio','writer','full_synop',
     'all_reviewers_average','num_all_reviewers',                                 
     'num_all_fresh','num_all_rotten','top_reviewers_average','num_top_reviewers',
@@ -63,4 +63,5 @@ more_matches_director1 = rt_same_title3.merge(imdb_same_title3_director, how='in
 imdb_same_title_4_writers = imdb_same_title_4.merge(names, left_on = 'writer1', right_on = 'nconst')
 rt_same_title_4['writer_1'] = rt_same_title_4['writer'].str.split(', ').str[0]
 more_matches_writer1 = rt_same_title_4.merge(imdb_same_title_4_writers, how='inner', left_on = ['title', 'writer_1'], right_on= ['primaryTitle', 'primaryName'])
+matches_yearminus1 = imdb_same_title.merge(not_matched, left_on = ['primaryTitle', 'yearminus1'], right_on = ['simple_title', 'year'])
 
