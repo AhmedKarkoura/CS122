@@ -1,3 +1,5 @@
+import pandas as pd
+'''
 final_merged = pd.read_csv('final_merged.csv')
 potential_matches = pd.read_csv('potential_matches.csv')
 potential_matches['director1'] = potential_matches['directors'].str.split(', ').str[0]
@@ -64,8 +66,28 @@ imdb_same_title_4_writers = imdb_same_title_4.merge(names, left_on = 'writer1', 
 rt_same_title_4['writer_1'] = rt_same_title_4['writer'].str.split(', ').str[0]
 more_matches_writer1 = rt_same_title_4.merge(imdb_same_title_4_writers, how='inner', left_on = ['title', 'writer_1'], right_on= ['primaryTitle', 'primaryName'])
 matches_yearminus1 = imdb_same_title.merge(not_matched, left_on = ['primaryTitle', 'yearminus1'], right_on = ['simple_title', 'year'])
-
+'''
 # try to match on title, yearplus1, yearminus1
 # try to match on title, rt_director1, rt_director2, rt_director3
 # try to match on title, rt_writer1, rt_writer2, rt_writer3
 # try the same matches on rt_simple_title (remove text in parenthesis)
+
+FILES_TO_CONCAT = ['more_matches_1.csv','more_matches_2.csv', 'more_matches_9.csv', 'more_matches_16.csv', 'more_matches_19.csv', 'more_matches_29.csv',
+    'more_matches_34.csv', 'more_matches_39.csv', 'more_matches_152.csv', 'more_matches_168.csv', 'more_matches_342.csv', 'more_matches_writer_1.csv',
+    'more_matches_writer_1_2.csv']
+
+def clean_and_concat(files_to_concat, old_merged_file):
+    old_merged = pd.read_csv(old_merged_file)
+    columns_needed = list(old_merged.columns)
+    new_merged = old_merged
+    for file in files_to_concat:
+        file_df = pd.read_csv(file)
+        if 'year' not in file_df.columns:
+            print(file)
+            file_df['theater_date'] = file_df['theater_date'].astype(str)
+            file_df['year'] = file_df['theater_date'].str[-4:]
+        file_df = file_df[columns_needed]
+        new_merged = pd.concat([new_merged, file_df])
+    new_merged = new_merged.drop_duplicates('movie_id')
+    new_merged.to_csv('8709_merged.csv', index = False)
+    return new_merged
