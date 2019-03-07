@@ -37,10 +37,12 @@
         <div class="frame">
             {% if result != None %}
             <div class="results">
-                <table id='mytable' class="courses">
+                <table id='mytable' class="movies">
                     <tr>
                         {% for col in columns %}
-                        <th>{{ col }}</th>
+                            {% if num_results != 0 %}
+                                <th>{{ col }}</th>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                     {% for entry in result %}
@@ -57,7 +59,7 @@
                 </table>
 
             </div>
-            <p class="num_results">Results: {{ num_results }}</p>
+            <p class="num_results">Number of results found: {{ num_results }}</p>
             {% endif %}
         </div>
     </body>

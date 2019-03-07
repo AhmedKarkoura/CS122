@@ -1,14 +1,15 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from functools import reduce
+from operator import and_
+from django import forms
+from filter import find_movies
 import json
 import traceback
 import sys
 import csv
 import os
-from functools import reduce
-from operator import and_
-from django import forms
-from filter import find_movies
+
 
 NOPREF_STR = 'No preference'
 
@@ -43,15 +44,26 @@ def _build_dropdown(options):
     """Convert a list to (value, caption) tuples."""
     return [(x, x) if x is not None else ('', NOPREF_STR) for x in options]
 
-
+def _valid_result(res):
+    """Validate results returned by find_movies."""
+    (header, results) = [0, 1]
+    n = len(res[header])
+    if not (isinstance(res, (tuple, list)) and
+          len(res) == 2 and
+          isinstance(res[header], (tuple, list)) and
+          isinstance(res[results], (tuple, list))):
+        return False
+    def _valid_row(row):
+        return isinstance(row, (tuple, list)) and len(row) == n
+    return reduce(and_, (_valid_row(x) for x in res[results]), True)
 
 GENRES = _build_dropdown(genres_lst)
 RATINGS = _build_dropdown(ratings_lst)
 STUDIOS = _build_dropdown(studios_lst)
 ORDER = _build_dropdown(order_by_lst)
 
-class SearchForm(forms.Form):
 
+class SearchForm(forms.Form):
 
     genre = forms.ChoiceField(label='Genre', choices=GENRES, required=False)
     actor = forms.CharField(
@@ -74,21 +86,19 @@ class SearchForm(forms.Form):
     show_args = forms.BooleanField(label='Show args_to_ui',
                                    required=False)
 
+
 def home(request):
     context = {}
     res = None
+
+    #cretaing a form and populating it with data after the request is filled
+    if request.method != 'GET':
+        form = SearchForm()
     if request.method == 'GET':
-        # create a form instance and populate it with data from the request:
         form = SearchForm(request.GET)
-        # check whether it's valid:
+
         if form.is_valid():
-
-
             args = {}
-            if form.cleaned_data['genre']:
-                args['genre'] = form.cleaned_data['genre']
-           
-
             genre = form.cleaned_data['genre']
             actor = form.cleaned_data['actor']
             director = form.cleaned_data['director']
@@ -97,8 +107,8 @@ def home(request):
             runtime = form.cleaned_data['runtime'] 
             order_by = form.cleaned_data['order_by']
 
-            # if genre:
-            #     args['genre'] = genre
+            if genre:
+                args['genre'] = genre
 
             if actor:
                 args['actor'] = actor
@@ -121,23 +131,12 @@ def home(request):
             if form.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
 
-
             try:
                 res = find_movies(args)
             except Exception as e:
                 print('Exception caught')
-                bt = traceback.format_exception(*sys.exc_info()[:3])
-                context['err'] = """
-                An exception was thrown in find_movies:
-                <pre>{}
-{}</pre>
-                """.format(e, '\n'.join(bt))
-
                 res = None
-    else:
-        form = SearchForm()
 
-    # Handle different responses of res
     if res is None:
         context['result'] = None
     
@@ -148,12 +147,11 @@ def home(request):
 
     elif not _valid_result(res):
         context['result'] = None
-        context['err'] = ('Return of find_movies has the wrong data type. '
-                          'Should be a tuple of length 4 with one string and '
-                          'three lists.')
+        context['err'] = ('Format of the return of find_movies is incorrect')
 
     else:
-        result = res[1]
+        columns, result = res
+       
         if args['order_by'] == 'oscars_nominations':
             columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
             'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
@@ -163,11 +161,6 @@ def home(request):
              'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
              'Short Synopsis', 'Runtime', 'MPAA Rating']
 
-
-        # Wrap in tuple if result is not already
-        if result and isinstance(result[0], str):
-            result = [(r,) for r in result]
-
         context['result'] = result
         context['num_results'] = len(result)
         context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
@@ -176,16 +169,4 @@ def home(request):
     return render(request, 'polls/index.html', context)
    
 
-def _valid_result(res):
-    """Validate results returned by find_movies."""
-    (HEADER, RESULTS) = [0, 1]
-    n = len(res[HEADER])
-    if not (isinstance(res, (tuple, list)) and
-          len(res) == 2 and
-          isinstance(res[HEADER], (tuple, list)) and
-          isinstance(res[RESULTS], (tuple, list))):
-        return False
-    def _valid_row(row):
-        return isinstance(row, (tuple, list)) and len(row) == n
-    return reduce(and_, (_valid_row(x) for x in res[RESULTS]), True)
 

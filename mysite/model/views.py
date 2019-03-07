@@ -10,18 +10,7 @@ from operator import and_
 from django import forms
 from predictive_model import setup, classify 
 
-NOPREF_STR = 'No preference'
 
-# COLUMN_NAMES = dict(
-#     genre='Genre',
-#     actor='Actor/Actress',
-#     director='Director',
-#     studio='Studio',
-#     rating='Rating',
-#     runtime='Runtime')
-COLUMN_NAMES = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
-        'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
-        'Runtime', 'MPAA Rating']
 
 genres_lst = ['', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
 'Musical & Performing Arts', 'Animation', 'Comedy', 'Western',
@@ -70,8 +59,6 @@ class SearchForm(forms.Form):
     runtime = forms.IntegerField(label='Runtime', 
         help_text='Maximum duration of movie in minutes',
         required=True)
-    # order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=True)
-    #ADD help_text about the order_by oscars
 
     show_args = forms.BooleanField(label='Show args_to_ui',
                                    required=False)
@@ -79,28 +66,23 @@ class SearchForm(forms.Form):
 def home(request):
     context = {}
     res = None
+    
+    #creating a form and populating it with data after the request is filled
+    if request.method != 'GET':
+        form = SearchForm()
     if request.method == 'GET':
-        # create a form instance and populate it with data from the request:
         form = SearchForm(request.GET)
-        # check whether it's valid:
         if form.is_valid():
-
-
             args = {}
-            if form.cleaned_data['genre']:
-                args['genre'] = form.cleaned_data['genre']
-           
-
             genre = form.cleaned_data['genre']
             actor = form.cleaned_data['actor']
             director = form.cleaned_data['director']
             studio =  form.cleaned_data['studio']
             rating = form.cleaned_data['rating']
             runtime = form.cleaned_data['runtime'] 
-            # order_by = form.cleaned_data['order_by']
 
-            # if genre:
-            #     args['genre'] = genre
+            if form.cleaned_data['genre']:
+                args['genre'] = form.cleaned_data['genre']
 
             if actor:
                 args['actor'] = actor
@@ -117,53 +99,22 @@ def home(request):
             if runtime:
                 args['runtime'] = runtime
 
-            # if order_by:
-            #     args['order_by'] = order_by
 
             if form.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
-
 
             try:
                 res = classify(args)
             except Exception as e:
                 print('Exception caught')
+
+   
+    if res is None:
+        context['result'] = None
     else:
-        form = SearchForm()
+        context['result'] = res
 
-    # Handle different responses of res
-    # if res is None:
-    #     context['result'] = None
     
-    # elif isinstance(res, str):
-    #     context['result'] = None
-    #     context['err'] = res
-    #     result = None
-
-    # elif not _valid_result(res):
-    #     context['result'] = None
-    #     context['err'] = ('Return of find_movies has the wrong data type. '
-    #                       'Should be a tuple of length 4 with one string and '
-    #                       'three lists.')
-
-    # else:
-    #     columns, result = res
-    #     columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
-    #     'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
-    #     'Runtime', 'MPAA Rating']
-
-    #     # Wrap in tuple if result is not already
-    #     if result and isinstance(result[0], str):
-    #         result = [(r,) for r in result]
-
-        # context['result'] = res
-        # context['num_results'] = len(res)
-        # context['columns'] = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director', 'Writer', ' Top 3 Actors'
-        # 'Critics Score', "Audience Score", 'Box Office',  'Poster', 'Short Synopsis', 
-        # 'Runtime', 'MPAA Rating']
-
-    #context['num_results'] = len(res)
-    context['result'] = res
     context['form'] = form
     return render(request, 'model/index.html', context)
    
