@@ -222,7 +222,7 @@ def get_select(ui_dict):
                      "format_top3actors(ratings.top3actors) AS top3actors", 
                      "ratings.critics_score", 
                      "ratings.audience_score", 
-                     "format_box_office(ratings.box_office) AS box_office", 
+                     "format_box_office(ratings.box_office) AS money", 
                      "ratings.poster_url AS poster_url", "ratings.short_synop", 
                      "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
                      #"get_people_pics(ratings.url) AS pics"]
