@@ -230,15 +230,9 @@ def get_select(ui_dict):
                      "format_top3actors(ratings.top3actors) AS top3actors", 
                      "ratings.critics_score", 
                      "ratings.audience_score", 
-<<<<<<< HEAD
-                     "format_box_office(ratings.box_office) AS money", 
-                     "ratings.poster_url AS poster_url", "ratings.short_synop", 
-                     "ratings.runtime||' minutes' AS runtime", "ratings.mpaa"]
-=======
                      "format_box_office(ratings.box_office) AS box_office", 
                      "ratings.short_synop", "ratings.runtime||' minutes' AS runtime", 
                      "ratings.mpaa", "ratings.poster_url AS poster_url", "url"]
->>>>>>> d02d631a115b1a5024074d1207b98e1da3f9b8ab
                      #"get_people_pics(ratings.url) AS pics"]
     if ui_dict['order_by'] == "oscars_nominations":
         actual_SELECT.append("ratings.oscar_nomination_count||' nominations'"\
