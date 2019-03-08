@@ -76,9 +76,13 @@ FILES_TO_CONCAT = ['more_matches_1.csv','more_matches_2.csv', 'more_matches_9.cs
     'more_matches_34.csv', 'more_matches_39.csv', 'more_matches_152.csv', 'more_matches_168.csv', 'more_matches_342.csv', 'more_matches_writer_1.csv',
     'more_matches_writer_1_2.csv']
 
+SWAP_DIRECTOR_X_WITH_Y = ['more_matches_1.csv', 'more_matches_16.csv', 'more_matches_19.csv', 'more_matches_34.csv', 'more_matches_39.csv', 'more_matches_168.csv',
+                          'more_matches_342.csv']
+
 def clean_and_concat(files_to_concat, old_merged_file):
     old_merged = pd.read_csv(old_merged_file)
     columns_needed = list(old_merged.columns)
+    #new_merged = pd.DataFrame()
     new_merged = old_merged
     for file in files_to_concat:
         file_df = pd.read_csv(file)
@@ -87,7 +91,24 @@ def clean_and_concat(files_to_concat, old_merged_file):
             file_df['theater_date'] = file_df['theater_date'].astype(str)
             file_df['year'] = file_df['theater_date'].str[-4:]
         file_df = file_df[columns_needed]
-        new_merged = pd.concat([new_merged, file_df])
+        file_df.columns = ['tconst', 'averageRating', 'numVotes', 'primaryTitle', 'isAdult',
+       'startYear', 'runtimeMinutes', 'genres', 'directors_x', 'writers',
+       'movie_id', 'title', 'directors_y', 'genre', 'theater_date',
+       'stream_date', 'box_office', 'mpaa', 'runtime', 'studio', 'writer',
+       'full_synop', 'all_reviewers_average', 'num_all_reviewers',
+       'num_all_fresh', 'num_all_rotten', 'top_reviewers_average',
+       'num_top_reviewers', 'num_top_fresh', 'num_top_rotten', 'user_rating',
+       'num_users', 'year']
+        if file in SWAP_DIRECTOR_X_WITH_Y:
+            file_df.columns = ['tconst', 'averageRating', 'numVotes', 'primaryTitle', 'isAdult',
+            'startYear', 'runtimeMinutes', 'genres', 'directors_y', 'writers',
+       'movie_id', 'title', 'directors_x', 'genre', 'theater_date',
+       'stream_date', 'box_office', 'mpaa', 'runtime', 'studio', 'writer',
+       'full_synop', 'all_reviewers_average', 'num_all_reviewers',
+       'num_all_fresh', 'num_all_rotten', 'top_reviewers_average',
+       'num_top_reviewers', 'num_top_fresh', 'num_top_rotten', 'user_rating',
+       'num_users', 'year']
+        new_merged = pd.concat([new_merged, file_df], sort=False)
     new_merged = new_merged.drop_duplicates('movie_id')
-    new_merged.to_csv('8709_merged.csv', index = False)
+    new_merged.to_csv('fixed_8709_merged.csv', index = False)
     return new_merged

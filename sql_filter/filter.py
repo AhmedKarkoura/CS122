@@ -25,6 +25,7 @@ def merge(movie_level_csv, all_page_csv):
     merged_df = all_page_df.merge(movie_level_df, left_on='movie_id', 
                                                   right_on='movie_id')
     merged_df.to_csv('movie_level_all_pages.csv', index = False)
+    return merged_df
 
 def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, 
                                merged_csv):
@@ -72,6 +73,7 @@ def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv,
                                           .astype(int)
 
     merged_df.to_csv('merged_oscar_count.csv', index = False)
+    return merged_df
 
 def clean_csv(csv_file_name):
     '''
@@ -149,7 +151,7 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('test2.db')
+        connection = sqlite3.connect('test.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
@@ -325,5 +327,5 @@ TEST_1 = {
     'mpaa': "PG-13",
     'order_by': 'audience_score'}
 
-TEST_3 = {'order_by': 'audience_score'}
+TEST_3 = {'order_by': 'box_office'}
 
