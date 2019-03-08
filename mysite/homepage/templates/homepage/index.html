@@ -1,19 +1,65 @@
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'homepage/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'homepage/bubblegum.css' %}">
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>HomePage</title>
-        <link rel="stylesheet" type="text/css" href="{% static '/main.css' %}" />
-    </head>
-    <body>
-        <div id="header">
-            <h1>Project Big Screen</h1>
+<head>
+    <title>HomePage</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/bubblegum.css' %}" />
+
+    <title>Project Big Screen </title>
+
+
+    <link rel="stylesheet" href="/bootstrap-themes/demo/css/styles.css?cache=94616">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Chicle|Open+Sans" rel="stylesheet">
+
+</head>
+<body class="ht-body ">
+    <div class="ht-tm-cat">
+      <div class="ht-tm-codeblock">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-danger ht-tm-element">
+          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">Project Big Screen</a>
+
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav mr-auto mt-2 mt-md-0">
+              <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ 'movie_recommendation' }}">Movie Recommendations</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ 'model' }}">Be a Hollywood Exec!</a>
+              </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+              <input class="form-control mr-sm-2" type="text" placeholder="Search">
+            </form>
+          </div>
+        </nav>
+      </div>
+    </div> <!-- navigation -->
+
+    <div class="ht-main">
+        <div id="ht-tm-jumbotron">
+          <div class="jumbotron bg-danger text-white mb-0 radius-0 ht-tm-jumbotron">
+            <div class="container">
+              <div class="ht-tm-header">
+                <h1 class="display-1 text-chicle text-light">Project Big Screen</h1>
+                <span class="lead text-light">A CS122 Project By</span>
+                <ul>
+                    <li>Abdallah Aboelela</li>
+                    <li>Ahmed Karkoura</li>
+                    <li>Scarla Pan</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
-        <ul>
+    </div>
 
-
-<ul>
-  <li><a href="{{ 'movie_recommendation' }}">Movie Recommendation</a></li>
-  <li><a href="{{ 'model' }}">Modeling Like a Hollywood Executive</a></li>
-</ul>
+</body>
+</html>
