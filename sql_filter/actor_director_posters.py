@@ -15,7 +15,6 @@ def get_person_posters(movie_url):
 
     s = 'SELECT actor_pic_url, director_pic_url, director1 FROM ratings WHERE url == "' + movie_url + '"'
     r = c.execute(s)
-
     actor_url, director_url, director = r.fetchall()[0]
 
     if not director_url:
@@ -57,11 +56,14 @@ def scrape(movie_url, director = False):
     html = r.read()
     soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
-    tag = soup.find('div', class_ = 'cast-item media inlineBlock')
-    actor_url = tag.find('img')['data-src']
+    try:
+        tag = soup.find('div', class_ = 'cast-item media inlineBlock')
+        actor_url = tag.find('img')['data-src']
 
-    if actor_url[0] == '/':
-        actor_url = 'https://www.rottentomatoes.com' + actor_url
+        if actor_url[0] == '/':
+            actor_url = 'https://www.rottentomatoes.com' + actor_url
+    except:
+        actor_url = ''
 
     if director:
         for li in soup.find_all('li', 'meta-row clearfix'):

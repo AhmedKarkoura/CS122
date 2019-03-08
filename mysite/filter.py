@@ -5,6 +5,9 @@ from fuzzywuzzy import fuzz
 import csv
 import actor_director_posters as adp
 
+#ALTER TABLE ratings ADD actor_pic_url VARCHAR(1024);
+#ALTER TABLE ratings ADD director_pic_url VARCHAR(1024);
+
 def merge(movie_level_csv, all_page_csv):
     '''
     Merge movie level csv data with pages level csv data and writes csv file 
@@ -21,8 +24,7 @@ def merge(movie_level_csv, all_page_csv):
                            'short_syn', 'all_page_title', 'url', 'poster_url']
     merged_df = all_page_df.merge(movie_level_df, left_on='movie_id', 
                                                   right_on='movie_id')
-    merged_df.to_csv('merged_all.csv', index = False)
-
+    merged_df.to_csv('movie_level_all_pages.csv', index = False)
 
 def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, 
                                merged_csv):
@@ -69,8 +71,7 @@ def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv,
     merged_df['total_nomination_count'] = merged_df['total_nomination_count']\
                                           .astype(int)
 
-    merged_df.to_csv('database.csv', index = False)
-
+    merged_df.to_csv('merged_oscar_count.csv', index = False)
 
 def clean_csv(csv_file_name):
     '''
@@ -86,7 +87,8 @@ def clean_csv(csv_file_name):
                        'genre', 'box_office', 'mpaa', 'runtime', 'studio', 
                        'writer', 'full_synop', 'all_reviewers_average', 
                        'user_rating', 'year', 'total_nomination_count']]
-    
+
+    ratings.user_rating = ratings.user_rating.fillna(0)
     ratings.user_rating = ratings.user_rating.astype(str)
     ratings.user_rating = ratings.user_rating.apply(lambda x: x.split('/')[0])
     ratings.all_reviewers_average = ratings.all_reviewers_average.astype(str)
@@ -122,7 +124,8 @@ def clean_csv(csv_file_name):
                        'writer1', 'writer2', 'writer3', 
                        'oscars_nomination_count']
 
-    ratings.to_csv('database.csv', index = False)
+    ratings.to_csv('ratings.csv', index = False)
+    return ratings
 
 def find_movies(ui_dict):
     '''
@@ -146,14 +149,13 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('final_complete.db')
+        connection = sqlite3.connect('test2.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
         connection.create_function("format_genre", 1, format_genre)
         connection.create_function("format_poster_url", 1, format_poster_url)
-        #connection.create_function("get_people_pics", 1, actor_director_posters.get_picture_url)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
@@ -165,12 +167,13 @@ def find_movies(ui_dict):
             final = []
             for movie in movies:
                 url = movie[-1]
+                print(url)
                 movie = tuple(movie[:len(movie)-1])
                 movie += adp.get_person_posters(url)
 
                 final.append(movie)
             
-            return (get_header(r) + ['hello'], final)
+            return (get_header(r) + ['hi'], final)
 
 def format_genre(genre):
     if not genre:
@@ -179,10 +182,10 @@ def format_genre(genre):
         return genre
 
 def format_box_office(box_office):
-    if box_office == '-1':
+    if box_office == -1:
         return "Not Available"
     else: 
-        return "$" + "{:,}".format(int(box_office))
+        return "$" + "{:,}".format(box_office)
 
 def format_top3actors(top3actors):
     top3actors = top3actors.split('/') 
@@ -217,6 +220,7 @@ def clean_header(s):
 
 
 def get_query(ui_dict):
+
     QUERY = get_select(ui_dict) + get_from(ui_dict) + \
             get_where_params(ui_dict)[0] + get_orderby(ui_dict) + " LIMIT 10"
 
@@ -232,11 +236,8 @@ def get_select(ui_dict):
                      "ratings.audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
                      "ratings.short_synop", "ratings.runtime||' minutes' AS runtime", 
-                     "ratings.mpaa", "ratings.poster_url AS poster_url", "url"]
-                     #"get_people_pics(ratings.url) AS pics"]
-    if ui_dict['order_by'] == "oscars_nominations":
-        actual_SELECT.append("ratings.oscar_nomination_count||' nominations'"\
-                             + " AS oscars_nominations")
+                     "ratings.mpaa", "ratings.oscar_nomination_count||' nominations'", 
+                     "ratings.poster_url AS poster_url", "url"]
     query_SELECT = 'SELECT DISTINCT ' + ', '.join(actual_SELECT)
     
     return query_SELECT
@@ -291,8 +292,10 @@ def get_where_params(ui_dict):
                 else:
                     params.append(ui_dict[arg])
                 WHERE.append(WHERE_DICT[arg])
-
-    query_WHERE = " WHERE " + " AND ".join(WHERE)
+    if WHERE:
+        query_WHERE = " WHERE " + " AND ".join(WHERE)
+    else:
+        query_WHERE = ""
 
     return query_WHERE, params
 
@@ -321,3 +324,6 @@ TEST_1 = {
     'runtime': 150,
     'mpaa': "PG-13",
     'order_by': 'audience_score'}
+
+TEST_3 = {'order_by': 'audience_score'}
+

@@ -56,12 +56,14 @@ def scrape(movie_url, director = False):
     r = urllib.request.urlopen('https://www.rottentomatoes.com' + movie_url)
     html = r.read()
     soup = bs4.BeautifulSoup(html, features = 'html5lib')
+    try: 
+        tag = soup.find('div', class_ = 'cast-item media inlineBlock')
+        actor_url = tag.find('img')['data-src']
 
-    tag = soup.find('div', class_ = 'cast-item media inlineBlock')
-    actor_url = tag.find('img')['data-src']
-
-    if actor_url[0] == '/':
-        actor_url = 'https://www.rottentomatoes.com' + actor_url
+        if actor_url[0] == '/':
+            actor_url = 'https://www.rottentomatoes.com' + actor_url
+    except:
+        actor_url = ''
 
     if director:
         for li in soup.find_all('li', 'meta-row clearfix'):

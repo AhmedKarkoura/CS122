@@ -5,6 +5,9 @@ from fuzzywuzzy import fuzz
 import csv
 import actor_director_posters as adp
 
+#ALTER TABLE ratings ADD actor_pic_url VARCHAR(1024);
+#ALTER TABLE ratings ADD director_pic_url VARCHAR(1024);
+
 def merge(movie_level_csv, all_page_csv):
     '''
     Merge movie level csv data with pages level csv data and writes csv file 
@@ -146,7 +149,7 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('test.db')
+        connection = sqlite3.connect('test2.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
@@ -170,7 +173,7 @@ def find_movies(ui_dict):
 
                 final.append(movie)
             
-            return (get_header(r) + ['hello'], final)
+            return (get_header(r) + ['hi'], final)
 
 def format_genre(genre):
     if not genre:
@@ -179,10 +182,10 @@ def format_genre(genre):
         return genre
 
 def format_box_office(box_office):
-    if box_office == '-1':
+    if box_office == -1:
         return "Not Available"
     else: 
-        return "$" + "{:,}".format(int(box_office))
+        return "$" + "{:,}".format(box_office)
 
 def format_top3actors(top3actors):
     top3actors = top3actors.split('/') 
@@ -233,7 +236,8 @@ def get_select(ui_dict):
                      "ratings.audience_score", 
                      "format_box_office(ratings.box_office) AS box_office", 
                      "ratings.short_synop", "ratings.runtime||' minutes' AS runtime", 
-                     "ratings.mpaa", "ratings.poster_url AS poster_url", "ratings.oscar_nomination_count||' nominations'", "url"]
+                     "ratings.mpaa", "ratings.oscar_nomination_count||' nominations'", 
+                     "ratings.poster_url AS poster_url", "url"]
     query_SELECT = 'SELECT DISTINCT ' + ', '.join(actual_SELECT)
     
     return query_SELECT
