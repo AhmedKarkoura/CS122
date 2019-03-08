@@ -152,14 +152,17 @@ def home(request):
     else:
         columns, result = res
        
-        if args['order_by'] == 'oscars_nominations':
-            columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
-            'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
-            'Short Synopsis', 'Runtime', 'MPAA Rating','Oscar Nominations' ]
-        else:
-            columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
-             'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 'Poster', 
-             'Short Synopsis', 'Runtime', 'MPAA Rating']
+        #if args['order_by'] == 'oscars_nominations':
+        columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
+        'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 
+        'Short Synopsis', 'Runtime', 'MPAA Rating','Oscar Nominations',
+        'Movie Poster', 'Actor Poster', 'Director Poster']
+            
+        # else:
+        #     columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
+        #     'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 
+        #     'Short Synopsis', 'Runtime', 'MPAA Rating',
+        #     'Movie Poster', 'Actor Poster', 'Director Poster']
 
         context['result'] = result
         context['num_results'] = len(result)
