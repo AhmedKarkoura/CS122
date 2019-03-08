@@ -44,24 +44,17 @@ ORDER = _build_dropdown(order_by_lst)
 
 class SearchForm(forms.Form):
 
-    genre = forms.ChoiceField(label='Genre', choices=GENRES, required=True)
+    genre = forms.ChoiceField(label='Genre', choices=GENRES)
     actor = forms.CharField(
-        label='Actor/Actress',
-        help_text='e.g. Johnny Depp or  e.g. Johnny Depp,Ben Affleck',
-        required=True)
+        label='Actor/Actress')
     director = forms.CharField(
-        label='Director',
-        help_text='e.g. Christopher Nolan or e.g. Christopher Nolan, Ron Howard',
-        required=True)
-    studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=True)
-    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=True)
+        label='Director')
+    studio = forms.ChoiceField(label='Studio', choices=STUDIOS)
+    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS)
 
-    runtime = forms.IntegerField(label='Runtime', 
-        help_text='Maximum duration of movie in minutes',
-        required=True)
+    runtime = forms.IntegerField(label='Runtime')
 
-    show_args = forms.BooleanField(label='Show args_to_ui',
-                                   required=False)
+    show_args = forms.BooleanField(label='Show args_to_ui')
 
 def home(request):
     context = {}

@@ -1,37 +1,101 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'model/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'model/bootstrap.css' %}">
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Modeling Like a Hollywood Executive</title>
-        <link rel="stylesheet" type="text/css" href="{% static '/main.css' %}" />
-    </head>
-    <body>
-        <div id="header">
-            <h1>Modeling Like a Hollywood Executive</h1>
-        </div>
-        <div class="frame">
-            <form method="get">
-                {% csrf_token %}
-                <table class="form">
-                {{ form }}
-                </table>
-                <input type="submit" value="Submit" />
-            </form>
-        </div>
+<head>
+    <title>Be a Studio Exec!</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/bootstrap.css' %}" />
 
-        {% if args %}
-        <div class="args">
-            <pre>{{ args }}</pre>
-        </div>
-        {% endif %}
+    <link rel="stylesheet" href="/bootstrap-themes/demo/css/styles.css?cache=94616">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Chicle|Open+Sans" rel="stylesheet">
 
-        <div class="frame">
-            {% if result != None %}
-                <p class="result">The result: {{ result }}</p>
+</head>
+<body class="ht-body ">
+    <div class="ht-tm-cat">
+      <div class="ht-tm-codeblock">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-danger ht-tm-element">
+          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">Project Big Screen</a>
 
-            {% endif %}
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav mr-auto mt-2 mt-md-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../movie_recommendation">Movie Recommendations</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link" href="#">Be a Hollywood Exec! <span class="sr-only">(current)</span></a>
+              </li>
+            </ul>
+            <div>
+                <a href="https://github.com/AhmedKarkoura/CS122" class="ht-tm-element btn btn-dark">
+                  <span class="fab fa-github mr-2"></span>Git</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div> <!-- navigation -->
+
+    <div class="ht-main">
+        <div id="ht-tm-jumbotron">
+          <div class="jumbotron bg-dark text-white mb-0 radius-0 ht-tm-jumbotron">
+            <div class="container">
+              <div class="ht-tm-header">
+                <h1 class="display-1 text-chicle text-light text-center">Model like a Hollywood Exec!&trade;</h1>
+              </div>
+            </div>
+            <div class="row">
+                <div class = "col-lg-6">
+                    <div class="frame">
+                        <form method="get">
+                            {% csrf_token %}
+                            <table class="form">
+                            {{ form }}
+                            </table>
+                            <input type="submit" value="Submit" />
+                        </form>
+                    </div>
+
+                    {% if args %}
+                    <div class="args">
+                        <pre>{{ args }}</pre>
+                    </div>
+                    {% endif %}
+
+                    <div class="frame">
+                        {% if result != None %}
+                            <p class="result">The result: {{ result }}</p>
+
+                        {% endif %}
+                    </div>
+                </div>
+                <div class = 'col-lg-6'>
+                    <div class="ht-tm-codeblock ht-tm-btn">
+                      <div class="ht-tm-element card text-left">
+                        <div class="card-header text-dark bg-danger">
+                          <b>Instructions</b>
+                        </div>
+                        <div class="card-body text-dark text-left">
+                          <p class="card-text"><em>Genre:</em> Choose from dropdown</p>
+                          <p class="card-text"><em>Actor/Actress:</em> Enter up to three comma separated names</p>
+                          <p class="card-text"><em>Director:</em> Enter up to two comma separated names</p>
+                          <p class="card-text"><em>Studio:</em> Choose from dropdown</p>
+                          <p class="card-text"><em>MPAA:</em> Choose from dropdown (model very sensitive to this input)</p>
+                          <p class="card-text"><em>Runtime:</em> Enter the duration of your movie</p>
+                          <h4 class="card-title"><b>*</b>All fields are required</h4>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
-    </body>
+    </div>
+</body>
 </html>
