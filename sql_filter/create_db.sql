@@ -22,15 +22,15 @@ CREATE TABLE ratings (
     url VARCHAR (1024),
     poster_url VARCHAR (1024),
     movie_id VARCHAR(50),
-    imdb_score int,
+    imdb_score real,
     title VARCHAR(255),
-    box_office VARCHAR(50),
+    box_office int,
     mpaa VARCHAR(1024),
     runtime int,
     studio VARCHAR(1024),
     full_synop VARCHAR(2048),
-    critics_score VARCHAR(32),
-    audience_score int,
+    critics_score real,
+    audience_score real,
     year int,
     genre1 VARCHAR(255),
     genre2 VARCHAR(255),
@@ -43,7 +43,7 @@ CREATE TABLE ratings (
     oscar_nomination_count int
     );
 .separator ,
-.import database.csv ratings
+.import ratings.csv ratings
 
 CREATE TABLE principal (
 	movie_id VARCHAR(50),
