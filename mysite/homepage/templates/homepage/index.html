@@ -1,10 +1,10 @@
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'homepage/bubblegum.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'homepage/bootstrap.css' %}">
 <!DOCTYPE html>
 <html>
 <head>
     <title>HomePage</title>
-    <link rel="stylesheet" type="text/css" href="{% static '/bubblegum.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static '/bootstrap.css' %}" />
 
     <title>Project Big Screen </title>
 
@@ -17,7 +17,7 @@
 <body class="ht-body ">
     <div class="ht-tm-cat">
       <div class="ht-tm-codeblock">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-danger ht-tm-element">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-secondary ht-tm-element">
           <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -35,9 +35,10 @@
                 <a class="nav-link" href="{{ 'model' }}">Be a Hollywood Exec!</a>
               </li>
             </ul>
-            <form class="form-inline my-2 my-lg-0">
-              <input class="form-control mr-sm-2" type="text" placeholder="Search">
-            </form>
+            <div>
+                <a href="https://github.com/AhmedKarkoura/CS122" class="ht-tm-element btn btn-primary">
+                  <span class="fab fa-github mr-2"></span>Git</a>
+            </div>
           </div>
         </nav>
       </div>
@@ -45,7 +46,7 @@
 
     <div class="ht-main">
         <div id="ht-tm-jumbotron">
-          <div class="jumbotron bg-danger text-white mb-0 radius-0 ht-tm-jumbotron">
+          <div class="jumbotron bg-success text-white mb-0 radius-0 ht-tm-jumbotron">
             <div class="container">
               <div class="ht-tm-header">
                 <h1 class="display-1 text-chicle text-light">Project Big Screen</h1>
@@ -57,9 +58,32 @@
                 </ul>
               </div>
             </div>
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="ht-tm-codeblock">
+                  <div style = "border-color: white;" class="ht-tm-element card bg-success text-white mb-3 text-center">
+                    <div class="card-body">
+                      <blockquote class="card-blockquote">
+                        <p>Try our <em>Movie Recommender</em>, where you can input your favorite actors, directors, genres, and more, and receive not very personalized recommendations based from IMDb or Rotten Tomatoes!</p>
+                      </blockquote>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="ht-tm-codeblock">
+                  <div style = "border-color: white;" class="ht-tm-element card bg-success text-white mb-3 text-center">
+                    <div class="card-body">
+                      <blockquote class="card-blockquote">
+                        <p>Also try your luck at our <em>Be a Hollywood Exec!</em>&trade; section, where you can input the characteristics of the movie you would like to make and see how it would do in the box office!</p>
+                      </blockquote>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
     </div>
-
 </body>
 </html>
