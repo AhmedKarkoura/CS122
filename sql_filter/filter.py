@@ -253,22 +253,7 @@ def get_from(ui_dict):
 
     query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + ' AND '.join(ON)
     return query_FROM
-    '''
-
-    FROM = ['ratings']
-    ON = ['']
-
-    if 'actor' in ui_dict:
-        FROM += ['principal', 'names']
-        ON += ['ratings.movie_id = principal.movie_id', 
-               'principal.name_id = names.name_id']
-        query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + \
-                            ' AND '.join(ON)
-    else:
-        query_FROM = " FROM " + FROM[0] 
-
-    return query_FROM
-    '''
+    
 
 def get_where_params(ui_dict):
     WHERE_DICT = {
@@ -336,8 +321,9 @@ TEST_1 = {
     'actor': 'Matt Damon',
     'studio': 'Universal',
     'runtime': 150,
-    'mpaa': "PG-13",
+    'rating': "PG-13",
     'order_by': 'audience_score'}
 
-TEST_3 = {'order_by': 'box_office'}
+TEST_3 = {'rating': "PG-13",
+'order_by': 'audience_score'}
 
