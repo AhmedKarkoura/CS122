@@ -88,7 +88,6 @@ def classify(ui_dict):
 
     row = [ui_dict.get(col) for col in cols]
     row = ensure_accuracy(row, labelers)
-    print(row)
 
     for i, val in enumerate(row):
         if i != 1:
@@ -113,6 +112,7 @@ def ensure_accuracy(row, labelers):
 
     row[4:] = check_row
 
+    print(row)
     return row
 
 ### NO LONGER NECESSARY###

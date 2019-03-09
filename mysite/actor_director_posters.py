@@ -10,7 +10,7 @@ import bs4
 import csv
 
 def get_person_posters(movie_url):
-    connection = sqlite3.connect('final_complete.db')
+    connection = sqlite3.connect('final_database.db')
     c = connection.cursor()
 
     s = 'SELECT actor_pic_url, director_pic_url, director1 FROM ratings WHERE url == "' + movie_url + '"'

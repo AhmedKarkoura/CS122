@@ -35,7 +35,9 @@ CREATE TABLE ratings (
     director2 VARCHAR(255),
     writer1 VARCHAR(255),
     writer2 VARCHAR(255),
-    writer3 VARCHAR(255)
+    writer3 VARCHAR(255),
+    actor_pic_url VARCHAR(1024),
+    director_pic_url VARCHAR(1024)
     );
 .separator ,
 .import cleaned_matches.csv ratings

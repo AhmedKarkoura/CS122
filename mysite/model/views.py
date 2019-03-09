@@ -48,8 +48,6 @@ class SearchForm(forms.Form):
     studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required = False)
     rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required = False)
     runtime = forms.IntegerField(label='Runtime', required = False)
-    show_args = forms.BooleanField(label='Show args_to_ui',
-                                   required=False)
 
 def home(request):
     context = {}
@@ -88,15 +86,13 @@ def home(request):
             if runtime:
                 args['runtime'] = runtime
 
-            if form.cleaned_data['show_args']:
-                context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
-
             try:
                 res = classify(args)
 
             except Exception as e:
                 if bool(args):
-                    res = 'All fields are required'
+                    print(args)
+                    res = 'Please fill all fields'
                 print('Exception caught')
 
    
