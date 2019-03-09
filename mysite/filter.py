@@ -1,182 +1,102 @@
+'''
+Find Movies SQL Filter for Project Big Screen
+'''
 import sqlite3
-import pandas as pd
-import numpy as np
 from fuzzywuzzy import fuzz
-import csv
 import actor_director_posters as adp
 
-### MERGE AND CLEAN CSVS FOR DATABASE ###
+HEADERS = ['title', 'genre1', 'genre2', 'genre3', 'director1', 'writer1',
+           'top3actors','critics_score', 'audience_score', 'box_office', 
+           'short_synop', 'runtime', 'mpaa', 'oscar_nomination_count', 
+           'poster_url', 'actor_pic_url', 'director_pic_url']
 
-#ALTER TABLE ratings ADD actor_pic_url VARCHAR(1024);
-#ALTER TABLE ratings ADD director_pic_url VARCHAR(1024);
+SELECT = ["ratings.title", "ratings.genre1", 
+          "format_genre(ratings.genre2)", "format_genre(ratings.genre3)", 
+          "ratings.director1", "ratings.writer1", 
+          "format_top3actors(ratings.top3actors)", 
+          "ratings.critics_score", "ratings.audience_score", 
+          "format_box_office(ratings.box_office)", 
+          "format_synop(ratings.short_synop)", 
+          "ratings.runtime||' minutes'", "ratings.mpaa", 
+          "ratings.oscar_nomination_count||' nominations'", 
+          "ratings.poster_url", "ratings.url"]
 
-def merge(movie_level_csv, all_page_csv):
-    '''
-    Merge movie level csv data with pages level csv data and writes csv file 
-    with merged data
+FROM = ['ratings', 'principal', 'names']
 
-    Inputs: 
-        movie_level_csv: movie level csv filename
-        all_page_csv: page level csv filename
-    '''
+ON = ['ratings.movie_id = principal.movie_id', 
+      'principal.name_id = names.name_id']
 
-    movie_level_df = pd.read_csv(movie_level_csv)
-    all_page_df = pd.read_csv(all_page_csv, sep='|', header=None)
-    all_page_df.columns = ['movie_id', 'top3actors', 'all_page_runtime', 
-                           'short_syn', 'all_page_title', 'url', 'poster_url']
-    merged_df = all_page_df.merge(movie_level_df, left_on='movie_id', 
-                                                  right_on='movie_id')
+WHERE_DICT = {
+    "genre": "(ratings.genre1 == ? OR ratings.genre2 == ?" + \
+             " OR ratings.genre3 == ?)",
+    "actor": "(fuzz(names.name, ?) >= 80 and" + \
+             " (principal.category == 'actor'" + \
+             " OR principal.category == 'actress'))",
+    "director": "(fuzz(ratings.director1, ?) >= 80" + \
+                " OR fuzz(ratings.director2, ?) >= 80)",
+    "studio": "ratings.studio = ?",
+    "rating": "ratings.mpaa = ?",
+    "runtime": "ratings.runtime <= ?"}
 
-    merged_df.to_csv('movie_level_all_pages.csv', index=False)
-
-    return merged_df
-
-def get_oscar_nomination_count(oscars_awards_csv, acting_nominees_csv, 
-                               merged_csv):
-    '''
-    Add total oscar nomination count column to merged data csv
-
-    Inputs:
-        oscars_awards_csv: oscars award csv filename; file contains all oscars
-            nominations except for nominations for acting awards
-        acting_nominations_csv: acting nominations csv filename; file contains 
-            all acting nominations
-    '''
-
-    acting_noms_df = pd.read_csv(acting_nominees_csv)
-    oscars_awards_df = pd.read_csv(oscars_awards_csv)
-    merged_df = pd.read_csv(merged_csv)
-
-    acting_nom_count_df = acting_noms_df.groupby(['movie', 'year'])\
-                         .size().reset_index(name='acting_count')
-    oscars_nom_count_df = oscars_awards_df.groupby(['entity', 'year'])\
-                         .size().reset_index(name='other_awards_count')
-    noms_df = pd.merge(oscars_nom_count_df, acting_nom_count_df, 
-        how='outer', left_on=['entity', 'year'], right_on=['movie','year'])
-    noms_df['movie'] = noms_df['movie'].fillna(noms_df['entity'])
-    noms_df = noms_df.drop(columns='entity')
-    noms_df = noms_df.fillna(0)
-    noms_df['acting_count'] = noms_df.acting_count.astype(int)
-    noms_df['other_awards_count'] = noms_df.other_awards_count.astype(int)
-    noms_df['total_nomination_count'] = noms_df['acting_count'] + \
-                                        noms_df['other_awards_count']
-
-    merged_df['lower_case_title'] = merged_df['primaryTitle'].str.lower()\
-                                                          .str.strip(' ')
-    noms_df['lower_case_title'] = noms_df['movie'].str.lower().str.strip(' ')
-    merged_df = merged_df.merge(noms_df, how='left', 
-        left_on=['lower_case_title', 'year'], 
-        right_on = ['lower_case_title', 'year'])
-    merged_df['total_nomination_count'] = merged_df['total_nomination_count']\
-                                          .fillna(0)
-    merged_df['total_nomination_count'] = merged_df['total_nomination_count']\
-                                          .astype(int)
-
-    merged_df.to_csv('merged_oscar_count.csv', index = False)
-
-    return merged_df
-
-def clean_csv(csv_file_name):
-    '''
-    Clean merged data csv (change column types, drop unneccessary columns, etc)
-
-    Inputs:
-        csv_file_name: csv filename for file that contains all the merged data
-    '''
-
-    ratings = pd.read_csv(csv_file_name)
-    ratings = ratings[['top3actors', 'short_syn', 'url', 'poster_url', 
-                       'tconst', 'averageRating', 'title', 'directors_y', 
-                       'genre', 'box_office', 'mpaa', 'runtime', 'studio', 
-                       'writer', 'full_synop', 'all_reviewers_average', 
-                       'user_rating', 'year', 'total_nomination_count']]
-
-    ratings.user_rating = ratings.user_rating.fillna(0)
-    ratings.user_rating = ratings.user_rating.astype(str)
-    ratings.user_rating = ratings.user_rating.apply(lambda x: x.split('/')[0])
-    ratings.all_reviewers_average = ratings.all_reviewers_average.astype(str)
-    ratings.all_reviewers_average = ratings.all_reviewers_average\
-                                             .apply(lambda x: x.split('/')[0])
-    ratings['genre1'] = ratings['genre'].str.split(', ').str[0]
-    ratings['genre2'] = ratings['genre'].str.split(', ').str[1]
-    ratings['genre3'] = ratings['genre'].str.split(', ').str[2]
-    ratings['director1'] = ratings['directors_y'].str.split(', ').str[0]
-    ratings['director2'] = ratings['directors_y'].str.split(', ').str[1]
-    ratings['writer1'] = ratings['writer'].str.split(', ').str[0]
-    ratings['writer2'] = ratings['writer'].str.split(', ').str[1]
-    ratings['writer3'] = ratings['writer'].str.split(', ').str[2]
-    ratings['studio'] = ratings['studio'].str.split(', ').str[0]
-    ratings['mpaa'] = ratings['mpaa'].str.split(' ').str[0]
-    ratings.box_office = ratings.box_office.fillna(-1)
-    ratings.box_office = ratings.box_office.astype(str).apply(lambda x: \
-                              x.replace('$', '').replace(',', '')).astype(int)
-
-    ratings = ratings[['top3actors', 'short_syn', 'url', 'poster_url', 
-                       'tconst', 'averageRating', 'title', 'box_office', 
-                       'mpaa', 'runtime', 'studio', 'full_synop',
-                       'all_reviewers_average', 'user_rating', 'year', 
-                       'genre1', 'genre2', 'genre3', 'director1', 'director2', 
-                       'writer1', 'writer2', 'writer3',
-                       'total_nomination_count']]
-
-    ratings.columns = ['top3actors', 'short_synopsis', 'url', 'poster_url', 
-                       'movie_id', 'imdb_score', 'title', 'box_office', 
-                       'mpaa', 'runtime', 'studio', 'full_synopsis',
-                       'critics_score', 'audience_score', 'year', 'genre1', 
-                       'genre2', 'genre3', 'director1', 'director2', 
-                       'writer1', 'writer2', 'writer3', 
-                       'oscars_nomination_count']
-
-    ratings.to_csv('ratings.csv', index = False)
-
-    return ratings
+ORDERBY_DICT = {"oscars_nominations": "ratings.oscar_nomination_count DESC",
+                "critics_score": "ratings.critics_score DESC",
+                "audience_score": "ratings.audience_score DESC",
+                "box_office": "ratings.box_office DESC"}
 
 ### USER DEFINED FUNCTIONS FOR SQL 
 
 def format_genre(genre):
+    '''
+    Format genre selected 
+
+    Input:
+        genre: str selected from sql query
+
+    Return: genre or "N/A" if no second or third genre
+    '''
     if not genre:
         return "N/A"
     else: 
         return genre
 
 def format_box_office(box_office):
+    '''
+    Format box office
+
+    Input:
+        box_office = int selected from sql query
+
+    Return: string formatted as $ amount or Not Available
+    '''
     if box_office == -1:
         return "Not Available"
     else: 
         return "$" + "{:,}".format(box_office)
 
 def format_synop(short_synop):
+    '''
+    Format short synopsis (remove html tags)
+
+    Input:
+        short_synop: str selected from sql query
+    Return: string with html tags removed
+    '''
     for replace in ['<em>', '</em>', '<i>', '</i>']:
         short_synop = short_synop.replace(replace, '')
 
     return short_synop
 
 def format_top3actors(top3actors):
+    '''
+    Format_top 3 actors
+
+    Input: 
+        top3actors: str selected from sql query
+    Return: string with comma replacing forward slash
+    '''
     top3actors = top3actors.split('/') 
     return ', '.join(top3actors)
 
-def get_header(cursor):
-    '''
-    Given a cursor object, returns the appropriate header (column names)
-    '''
-    desc = cursor.description
-    header = ()
-
-    for i in desc:
-        header = header + (clean_header(i[0]),)
-
-    return list(header)
-
-def clean_header(s):
-    '''
-    Removes table name from header
-    '''
-    for i, _ in enumerate(s):
-        if s[i] == ".":
-            s = s[i + 1:]
-            break
-
-    return s
 
 def find_movies(ui_dict):
     '''
@@ -193,7 +113,7 @@ def find_movies(ui_dict):
             'box_office']
 
     Return: 
-        header, movies that fit the filter criteria
+        list of headers and list containing query results
     '''
 
     if not ui_dict:
@@ -209,7 +129,6 @@ def find_movies(ui_dict):
         connection.create_function("format_synop", 1, format_synop)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
-        print(query)
         r = c.execute(query, params)
         movies = r.fetchall() 
         connection.close()
@@ -219,15 +138,21 @@ def find_movies(ui_dict):
             final = []
             for movie in movies:
                 url = movie[-1]
-                print(url)
                 movie = tuple(movie[:len(movie)-1])
                 movie += adp.get_person_posters(url)
-
                 final.append(movie)
-            
-            return (get_header(r) + ['hi'], final)
+            return (HEADERS, final)
 
 def get_query(ui_dict):
+    '''
+    Takes a dictionary containing search criteria and returns an SQL query
+
+    Input:
+        ui_dict: dictionary containing search criteria
+
+    Returns:
+        query: string SQL query 
+    '''
 
     QUERY = get_select(ui_dict) + get_from(ui_dict) + \
             get_where_params(ui_dict)[0] + get_orderby(ui_dict) + " LIMIT 10"
@@ -235,17 +160,16 @@ def get_query(ui_dict):
     return QUERY
 
 def get_select(ui_dict):
-    SELECT = ["ratings.title", "ratings.genre1", 
-              "format_genre(ratings.genre2) AS genre2", 
-              "format_genre(ratings.genre3) AS genre3", 
-              "ratings.director1", "ratings.writer1", 
-              "format_top3actors(ratings.top3actors) AS top3actors", 
-              "ratings.critics_score", "ratings.audience_score", 
-              "format_box_office(ratings.box_office) AS box_office", 
-              "format_synop(ratings.short_synop)", "ratings.runtime||' minutes'", 
-              "ratings.mpaa", 
-              "ratings.oscar_nomination_count||' nominations'", 
-              "ratings.poster_url", "ratings.url"]
+    '''
+    Takes a dictionary containing search criteria and returns select portion of 
+    SQL query
+
+    Input:
+        ui_dict: dictionary containing search criteria
+
+    Returns:
+        query_SELECT: string for select portion of SQL query 
+    '''
 
     query_SELECT = 'SELECT DISTINCT ' + ', '.join(SELECT)
     
@@ -253,27 +177,36 @@ def get_select(ui_dict):
 
 
 def get_from(ui_dict):
+    '''
+    Takes a dictionary containing search criteria and returns
+    FROM and ON portion of SQL query, which indicates which tables 
+    to JOIN and on what columns to join them. 
 
-    FROM = ['ratings', 'principal', 'names']
-    ON = ['ratings.movie_id = principal.movie_id', 
-          'principal.name_id = names.name_id']
+    Input:
+        ui_dict: dictionary containing search criteria
+
+    Returns:
+        FROM and ON query: string containing FROM, JOIN and ON 
+            portion of SQL query 
+    '''
 
     query_FROM = " FROM " + ' JOIN '.join(FROM) + " ON " + ' AND '.join(ON)
     return query_FROM
     
 
 def get_where_params(ui_dict):
-    WHERE_DICT = {
-        "genre": "(ratings.genre1 == ? OR ratings.genre2 == ?" + \
-                 " OR ratings.genre3 == ?)",
-        "actor": "(fuzz(names.name, ?) >= 80 and" + \
-                 " (principal.category == 'actor'" + \
-                 " OR principal.category == 'actress'))",
-        "director": "(fuzz(ratings.director1, ?) >= 80" + \
-                    " OR fuzz(ratings.director2, ?) >= 80)",
-        "studio": "ratings.studio = ?",
-        "rating": "ratings.mpaa = ?",
-        "runtime": "ratings.runtime <= ?"}
+    '''
+    Takes a dictionary containing search criteria and returns
+    WHERE portion of SQL query, as well as tuple of parameters 
+    on which to execute the SQL query. 
+
+    Input:
+        ui_dict: dictionary containing search criteria
+
+    Returns:
+        WHERE query, params: string containing WHERE portion of SQL query,
+          tuple containing parameters on which to execute query
+    '''
     
     WHERE = []
     params = []
@@ -305,32 +238,38 @@ def get_where_params(ui_dict):
     return query_WHERE, params
 
 def get_orderby(ui_dict):
-    ORDERBY_DICT = {"oscars_nominations": "ratings.oscar_nomination_count DESC",
-                    "critics_score": "ratings.critics_score DESC",
-                    "audience_score": "ratings.audience_score DESC",
-                    "box_office": "ratings.box_office DESC"}
+    '''
+    Takes a dictionary containing search criteria and returns order by portion 
+    of SQL query
+
+    Input:
+        ui_dict: dictionary containing search criteria
+
+    Returns:
+        query_ORDERBY: string for orderby portion of SQL query 
+    '''
     
     query_ORDERBY = " ORDER BY " + ORDERBY_DICT[ui_dict['order_by']]
 
     return query_ORDERBY
 
+### TESTING DICTIONARIES
+
+TEST_0 = {'actor': "emma stone",
+          'order_by': 'oscars_nominations'}
+
+TEST_1 = {'genre': 'Drama',
+          'actor': 'Matt Damon',
+          'studio': 'Universal',
+          'runtime': 150,
+          'rating': "PG-13",
+          'order_by': 'audience_score'}
 
 TEST_2 = {'actor': 'emma stone , matt damon',  
           'director': 'woody allen, damien chazelle',
           'order_by': 'box_office',
           'genre': 'Drama'}
 
-TEST_0 = {'actor': "emma stone",
-          'order_by': 'oscars_nominations'}
-
-TEST_1 = {
-    'genre': 'Drama',
-    'actor': 'Matt Damon',
-    'studio': 'Universal',
-    'runtime': 150,
-    'rating': "PG-13",
-    'order_by': 'audience_score'}
-
 TEST_3 = {'rating': "PG-13",
-'order_by': 'audience_score'}
+          'order_by': 'audience_score'}
 
