@@ -29,6 +29,9 @@ imdb_names = pd.read_csv('updated_names.csv')
 
 #Look at the shapes of each. (BEST case scenario: final_merged contains all of rt)
 
+'''
+imdb = pd.read_csv('../imdb/imdb_full.csv', low_memory=False)
+names = pd.read_csv('../imdb/final_names.csv', low_memory=False)
 
 #find all unmatched movies in rt
 merged = pd.read_csv('final_merged.csv')
@@ -51,26 +54,70 @@ rt.columns = ['movie_id', 'title', 'directors', 'genre', 'theater_date',
        'num_users']
 rt['movie_id'] = rt['movie_id'].astype(int)
 not_matched = pd.concat([rt, merged, merged]).drop_duplicates('movie_id',keep=False)
-not_matched['simple_title'] = not_matched['title'].str.split(" \(").str[0]
-unmatched_same_title = not_matched[not_matched['title'].isin(imdb['primaryTitle'])]
+imdb_same_title = imdb[imdb['primaryTitle'].isin(not_matched['title'])]
+
+#try to match on title and yearplus1 and yearminus1
 not_matched['year'] = not_matched['theater_date'].str[-4:]
-unmatched_same_title.merge(imdb, how='left', left_on = ['simple_title', 'year'], right_on = ['primaryTitle', 'startYear'])
-imdb_same_title = imdb[imdb['primaryTitle'].isin(unmatched_same_title['title'])]
-imdb_same_title['yearplus1'] = imdb_same_title['startYear'] + 1
-imdb_same_title['yearminus1'] = imdb_same_title['startYear'] - 1
-more_matches_yearminus1 = unmatched_same_title.merge(imdb_same_title, how='inner', left_on = ['title', 'year'], right_on = ['primaryTitle', 'yearminus1'])
-more_matches_yearplus1 = unmatched_same_title.merge(imdb_same_title, how='inner', left_on = ['title', 'year'], right_on = ['primaryTitle', 'yearminus1'])
-more_matches_director1 = rt_same_title3.merge(imdb_same_title3_director, how='inner', left_on = ['title', 'director_1'], right_on= ['primaryTitle', 'primaryName'])
-more_matches_director1 = rt_same_title3.merge(imdb_same_title3_director, how='inner', left_on = ['title', 'director_2'], right_on= ['primaryTitle', 'primaryName'])
-imdb_same_title_4_writers = imdb_same_title_4.merge(names, left_on = 'writer1', right_on = 'nconst')
-rt_same_title_4['writer_1'] = rt_same_title_4['writer'].str.split(', ').str[0]
-more_matches_writer1 = rt_same_title_4.merge(imdb_same_title_4_writers, how='inner', left_on = ['title', 'writer_1'], right_on= ['primaryTitle', 'primaryName'])
-matches_yearminus1 = imdb_same_title.merge(not_matched, left_on = ['primaryTitle', 'yearminus1'], right_on = ['simple_title', 'year'])
-'''
-# try to match on title, yearplus1, yearminus1
-# try to match on title, rt_director1, rt_director2, rt_director3
-# try to match on title, rt_writer1, rt_writer2, rt_writer3
-# try the same matches on rt_simple_title (remove text in parenthesis)
+imdb_same_title['yearplus1'] = imdb['startYear'] + 1
+matches_yearplus1 = imdb_same_title.merge(not_matched, left_on=['primaryTitle', 'yearplus1'], right_on=['title', 'year'])
+imdb_same_title['yearminus1'] = imdb['startYear'] - 1
+matches_yearminus1 = imdb_same_title.merge(not_matched, left_on=['primaryTitle', 'yearminus1'], right_on=['title', 'year'])
+not_matched = pd.concat(not_matched, matches_yearplus1, matches_yearminus1, matches_yearplus1, matches_yearminus1).drop_duplicates('movie_id', keep=False)
+
+#try to match on rt_director1, rt_director2, rt_director3
+imdb_same_title['director_id'] = imdb['directors'].str.split(',').str[0]
+not_matched['director1'] = not_matched['directors'].str.split(', ').str[0]
+not_matched['director2'] = not_matched['directors'].str.split(', ').str[1]
+not_matched['director3'] = not_matched['directors'].str.split(', ').str[2]
+imdb_same_title_director = imdb_same_title.merge(names, left_on='director_id', right_on='nconst')
+matches_director1 = imdb_same_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','director1'])
+matches_director2 = imdb_same_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','director2'])
+matches_director3 = imdb_same_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','director3'])
+not_matched = pd.concat(not_matched, matches_director1, more_matches_director1, matches_director2, matches_director2, matches_director3, matches_director3).drop_duplicates('movie_id', keep=False)
+
+#try to match on rt_writer1, rt_writer2, rt_writer3
+imdb_same_title['writer_id'] = imdb['writers'].str.split(',').str[0]
+not_matched['writer1'] = not_matched['writer'].str.split(', ').str[0]
+not_matched['writer2'] = not_matched['writer'].str.split(', ').str[1]
+not_matched['writer3'] = not_matched['writer'].str.split(', ').str[2]
+imdb_same_title_writer = imdb_same_title.merge(names, left_on='writer_id', right_on='nconst')
+matches_writer1 = imdb_same_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','writer1'])
+matches_writer2 = imdb_same_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','writer2'])
+matches_writer3 = imdb_same_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['title','writer3'])
+not_matched = pd.concat(not_matched, matches_writer1, more_matches_writer1, matches_writer2, matches_writer2, matches_writer3, matches_writer3).drop_duplicates('movie_id', keep=False)
+
+not_matched['simple_title'] = not_matched['title'].str.split(" \(").str[0]
+imdb_same_simple_title = imdb[imdb['primaryTitle'].isin(not_matched['simple_title'])]
+
+#try to match on simple title and year and yearplus1 and yearminus1
+matches_simpleyear = imdb_same_simple_title.merge(not_matched, left_on=['primaryTitle', 'year'], right_on=['simple_title', 'year'])
+imdb_same_simple_title['yearplus1'] = imdb['startYear'] + 1
+matches_simpleyearplus1 = imdb_same_simple_title.merge(not_matched, left_on=['primaryTitle', 'yearplus1'], right_on=['simple_title', 'year'])
+imdb_same_simple_title['yearminus1'] = imdb['startYear'] - 1
+matches_simpleyearminus1 = imdb_same__simple_title.merge(not_matched, left_on=['primaryTitle', 'yearminus1'], right_on=['simple_title', 'year'])
+not_matched = pd.concat(not_matched, matches_simpleyear, matches_simpleyear, matches_simpleyearplus1, matches_simpleyearminus1, matches_simpleyearplus1, matches_simpleyearminus1).drop_duplicates('movie_id', keep=False)
+
+#try to match on same simple title and rt_director1, rt_director2, rt_director3
+imdb_same_simple_title['director_id'] = imdb['directors'].str.split(',').str[0]
+not_matched['director1'] = not_matched['directors'].str.split(', ').str[0]
+not_matched['director2'] = not_matched['directors'].str.split(', ').str[1]
+not_matched['director3'] = not_matched['directors'].str.split(', ').str[2]
+imdb_same_simple_title_director = imdb_same_simple_title.merge(names, left_on='director_id', right_on='nconst')
+matches_simpledirector1 = imdb_same_simple_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','director1'])
+matches_simpledirector2 = imdb_same_simple_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','director2'])
+matches_simpledirector3 = imdb_same_simple_title_director.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','director3'])
+not_matched = pd.concat(not_matched, matches_simpledirector1, more_matches_simpledirector1, matches_simpledirector2, matches_simpledirector2, matches_simpledirector3, matches_simpledirector3).drop_duplicates('movie_id', keep=False)
+
+#try to match on same simple title and rt_writer1, rt_writer2, rt_writer3
+imdb_same_simple_title['writer_id'] = imdb['writers'].str.split(',').str[0]
+not_matched['writer1'] = not_matched['writer'].str.split(', ').str[0]
+not_matched['writer2'] = not_matched['writer'].str.split(', ').str[1]
+not_matched['writer3'] = not_matched['writer'].str.split(', ').str[2]
+imdb_same_simple_title_writer = imdb_same_simple_title.merge(names, left_on='writer_id', right_on='nconst')
+matches_simplewriter1 = imdb_same_simple_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','writer1'])
+matches_simplewriter2 = imdb_same_simple_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','writer2'])
+matches_simplewriter3 = imdb_same_simple_title_writer.merge(not_matched, left_on=['primaryTitle','primaryName'], right_on=['simple_title','writer3'])
+not_matched = pd.concat(not_matched, matches_simplewriter1, more_matches_simplewriter1, matches_simplewriter2, matches_simplewriter2, matches_simplewriter3, matches_simplewriter3).drop_duplicates('movie_id', keep=False)
 
 FILES_TO_CONCAT = ['more_matches_1.csv','more_matches_2.csv', 'more_matches_9.csv', 'more_matches_16.csv', 'more_matches_19.csv', 'more_matches_29.csv',
     'more_matches_34.csv', 'more_matches_39.csv', 'more_matches_152.csv', 'more_matches_168.csv', 'more_matches_342.csv', 'more_matches_writer_1.csv',
@@ -82,7 +129,6 @@ SWAP_DIRECTOR_X_WITH_Y = ['more_matches_1.csv', 'more_matches_16.csv', 'more_mat
 def clean_and_concat(files_to_concat, old_merged_file):
     old_merged = pd.read_csv(old_merged_file)
     columns_needed = list(old_merged.columns)
-    #new_merged = pd.DataFrame()
     new_merged = old_merged
     for file in files_to_concat:
         file_df = pd.read_csv(file)
