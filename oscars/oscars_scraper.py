@@ -9,20 +9,35 @@ import queue
 import json
 import sys
 import csv
-import sqlite3
 import urllib.request
 import requests
 
-urls = ['https://en.wikipedia.org/wiki/Academy_Awards#Current_categories', 'https://variety.com/2019/film/news/2019-oscars-winners-list-academy-awards-1203145638/']
+CURR_CAT_URL = 'https://en.wikipedia.org/wiki/Academy_Awards#Current_categories'
 
-def get_acting_nominees(url):
+def get_acting_nominees(current_category_url):
+    '''
+    Get nominees for all acting awards and write to csv (year, category, actor/
+    actress, winner(bool), movie associated with nomination)
+
+    Inputs:
+        current_category_url: url for current categories
+    '''
     nominees = []
-    for url in get_category_urls(url)[2:6]:
+    for url in get_category_urls(current_category_url)[2:6]:
         nominees += get_nominees(url) 
     write_csv(nominees)
     return nominees
 
-def get_category_urls(url):
+def get_category_urls(current_category_url):
+    '''
+    From URL with current categories, get url for each category
+    Input: 
+        current_category_url: url for current categories 
+
+    Return:
+        list of urls with each url containing awards information for one 
+        category
+    '''
     html = requests.get(url).text
     soup = BeautifulSoup(html, "html5lib")
     links = soup.find('div', 
@@ -36,7 +51,19 @@ def get_category_urls(url):
 
     return urls
 
-def get_nominees(url):
+def get_nominees(acting_award_url):
+    '''
+    Given url for an acting category, get nomination information for each 
+    nominee
+
+    Inputs:
+        acting_award_url: url for acting award category
+
+    Return: 
+        list of lists: list of nominees, each nominee being a list of year, 
+        category, actor/actress, winner(bool), movie
+    '''
+
     nominees = []
     html = requests.get(url).text
     soup = BeautifulSoup(html, "html5lib")
@@ -80,6 +107,13 @@ def get_nominees(url):
     return nominees
 
 def write_csv(nominees):
+    '''
+    Write csv for nominees 
+
+    Input:
+        nominees: list of nominees, each nominee being a list of year, 
+        category, actor/actress, winner(bool), movie
+    '''
     with open('acting_awards.csv', 'w') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(['year', 'category', 'actor/actress','winner', 

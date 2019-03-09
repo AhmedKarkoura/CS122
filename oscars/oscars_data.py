@@ -1,3 +1,7 @@
+'''
+Clean Oscars CSV
+'''
+
 import numpy as np
 import pandas as pd 
 
@@ -12,8 +16,16 @@ DISREGARD_CATEGORIES = [
    'ACTRESS IN A LEADING ROLE', 'ACTRESS IN A SUPPORTING ROLE', 
    'ACTOR', 'ACTRESS']
 
-def get_awards():
-   oscars = pd.read_csv('oscars.csv')
+def get_awards(oscar_csv):
+   '''
+   Clean oscars CSV; remove acting categories, discontinued categories, 
+   special awards, etc. 
+
+   Inputs:
+      oscar_csv: file with all of oscars nominations through 2017 (manually 
+                 inputed 2018 data because it came out recently)
+   '''
+   oscars = pd.read_csv(oscar_csv)
    oscars = oscars.loc[oscars.entity.str.startswith("To") == False]
    oscars = oscars.loc[oscars.category.str.contains("SPECIAL") == False]
    oscars = oscars.loc[oscars.category.str.contains("AWARD") == False]
