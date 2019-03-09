@@ -47,7 +47,7 @@
           <div class="jumbotron bg-dark text-white mb-0 radius-0 ht-tm-jumbotron">
             <div class="container">
               <div class="ht-tm-header">
-                <h1 class="display-1 text-chicle text-light text-center">Model like a Hollywood Exec!&trade;</h1>
+                <h1 class="display-1 text-chicle text-light text-center pb-5">Be a Hollywood Exec!&trade;</h1>
               </div>
             </div>
             <div class="row">
@@ -55,7 +55,7 @@
                     <div class="frame">
                         <form method="get">
                             {% csrf_token %}
-                            <table class="form">
+                            <table class="form text-white col-lg-12">
                             {{ form }}
                             </table>
                             <input type="submit" value="Submit" />
@@ -68,17 +68,16 @@
                     </div>
                     {% endif %}
 
-                    <div class="frame">
+                    <div class="frame text-center pt-4 text-white">
                         {% if result != None %}
-                            <p class="result">The result: {{ result }}</p>
-
+                            <h4 class="result">The result: {{ result }}</h4>
                         {% endif %}
                     </div>
                 </div>
                 <div class = 'col-lg-6'>
                     <div class="ht-tm-codeblock ht-tm-btn">
                       <div class="ht-tm-element card text-left">
-                        <div class="card-header text-dark bg-danger">
+                        <div class="card-header text-white bg-danger">
                           <b>Instructions</b>
                         </div>
                         <div class="card-body text-dark text-left">
