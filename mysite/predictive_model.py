@@ -24,7 +24,7 @@ def setup():
     matches.director1 = matches.director1.replace(-1, '')
     matches.director2 = matches.director2.replace(-1, '')
 
-    matches = matches.drop(['short_synopsis', 'url', 'poster_url', 'movie_id',
+    matches = matches.drop(['short_synopsis', 'poster_url', 'movie_id',
         'title', 'full_synopsis', 'critics_score', 'audience_score', 'year',
         'genre2', 'genre3', 'oscars_nomination_count', 'imdb_score',
         'writer1', 'writer2', 'writer3'], 
@@ -106,7 +106,7 @@ def classify(ui_dict):
 def ensure_accuracy(row):
     check_row = row[4:]
 
-    connection = sqlite3.connect('final_complete.db')
+    connection = sqlite3.connect('../sql_filter/old_databases/updated_complete.db')
     connection.create_function("fuzz", 2, fuzz.ratio)
     c = connection.cursor()
 
