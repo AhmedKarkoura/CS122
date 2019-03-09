@@ -6,7 +6,7 @@ import numpy as np
 import os
 import csv
 import sqlite3
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
@@ -17,14 +17,14 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 #from sklearn.metrics import r2_score, roc_auc_score
 
 def setup():
-    matches = pd.read_csv('../sql_filter/old_csvs/database.csv')
+    matches = pd.read_csv('../sql_filter/ratings.csv')
 
     matches = matches.replace('\\N', '')
     matches = matches.replace([np.nan, 'nan', 'NaN'], -1)
     matches.director1 = matches.director1.replace(-1, '')
     matches.director2 = matches.director2.replace(-1, '')
 
-    matches = matches.drop(['short_synopsis', 'poster_url', 'movie_id',
+    matches = matches.drop(['short_synopsis', 'url', 'poster_url', 'movie_id',
         'title', 'full_synopsis', 'critics_score', 'audience_score', 'year',
         'genre2', 'genre3', 'oscars_nomination_count', 'imdb_score',
         'writer1', 'writer2', 'writer3'], 
@@ -87,7 +87,7 @@ def classify(ui_dict):
         'actor1', 'actor2', 'actor3']
 
     row = [ui_dict.get(col) for col in cols]
-    row = ensure_accuracy(row)
+    row = ensure_accuracy(row, labelers)
     print(row)
 
     for i, val in enumerate(row):
@@ -103,19 +103,13 @@ def classify(ui_dict):
 
     return '${:,.2f}'.format(prediction)
 
-def ensure_accuracy(row):
+def ensure_accuracy(row, labelers):
     check_row = row[4:]
+    people = labelers.get('actor1').classes_
 
-    connection = sqlite3.connect('../sql_filter/old_databases/updated_complete.db')
-    connection.create_function("fuzz", 2, fuzz.ratio)
-    c = connection.cursor()
-
-    for i, item in enumerate(check_row):
-        s = 'SELECT name, fuzz(name, ?) as f from names ORDER BY f DESC LIMIT 1'
-
-        if item != -1 and item != '':
-            r = c.execute(s, (item,))
-            check_row[i] = r.fetchall()[0][0]
+    for i, person in enumerate(check_row):
+        if person != -1 and person != '' and person not in people:
+            check_row [i] = process.extractOne(person, people)[0]
 
     row[4:] = check_row
 

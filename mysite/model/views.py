@@ -15,8 +15,7 @@ from predictive_model import setup, classify
 genres_lst = ['', 'Action & Adventure', 'Classics', 'Art House & International', 'Drama',
 'Musical & Performing Arts', 'Animation', 'Comedy', 'Western',
 'Documentary', 'Horror', 'Mystery & Suspense', 'Cult Movies', 'Kids & Family',
-'Science Fiction & Fantasy', 'Romance', 'Sports & Fitness', 'Special Interest',
-'Gay & Lesbian', 'Television', 'Faith & Spirituality', 'Anime & Manga']
+'Science Fiction & Fantasy', 'Romance']
 ratings_lst = ['', 'NR', 'PG-13', 'PG', 'G', 'R', 'NC17']
 studios_lst = ['','IFC Films','Warner Bros. Pictures','Universal Pictures',
 '20th Century Fox','Magnolia Pictures','Sony Pictures Classics',
@@ -49,6 +48,8 @@ class SearchForm(forms.Form):
     studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required = False)
     rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required = False)
     runtime = forms.IntegerField(label='Runtime', required = False)
+    show_args = forms.BooleanField(label='Show args_to_ui',
+                                   required=False)
 
 def home(request):
     context = {}
@@ -86,6 +87,9 @@ def home(request):
 
             if runtime:
                 args['runtime'] = runtime
+
+            if form.cleaned_data['show_args']:
+                context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
 
             try:
                 res = classify(args)
