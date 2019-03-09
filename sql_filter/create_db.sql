@@ -41,6 +41,8 @@ CREATE TABLE ratings (
     writer2 VARCHAR(255),
     writer3 VARCHAR(255),
     oscar_nomination_count int
+    actor_pic_url VARCHAR(1024),
+    director_pic_url VARCHAR(1024)
     );
 .separator ,
 .import ratings.csv ratings

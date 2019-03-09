@@ -1,9 +1,0 @@
-1. Merge imdb, rt and oscars databases using JW (like pa4) on columns (title, year, runtime, rating?) 
-2. SQL filter, returns movies that match all inputs (like pa3)  
-3. Train model and repredict ratings (audience, critics, box office)  
-4. Build website:  
-  a. Search (if time: autocomplete? PA1)
-  b. Visualizations actual (audience ratings, critic ratings, box office)
-  c. Visualizations predicted (audience ratings, critic ratings, box office)
-  d. Movie poster (and actors/directors if time)
-  e. "Come up with your own movie" section
