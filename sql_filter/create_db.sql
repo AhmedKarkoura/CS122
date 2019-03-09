@@ -50,7 +50,7 @@ CREATE TABLE principal (
 	name_id VARCHAR(50),
 	category VARCHAR(255));
 .separator ,
-.import updated_principals.csv principal
+.import final_principals.csv principal
 
 CREATE TABLE names (
 	name_id VARCHAR(50),
@@ -58,4 +58,4 @@ CREATE TABLE names (
 	profession VARCHAR(255),
 	known_for VARCHAR(1024));
 .separator ,
-.import updated_names.csv names
+.import final_names.csv names

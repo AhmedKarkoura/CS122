@@ -13,7 +13,7 @@ def get_person_posters(movie_url):
     connection = sqlite3.connect('test.db')
     c = connection.cursor()
 
-    s = 'SELECT actor_pic_url, director_pic_url, director1 FROM ratings WHERE url == "' + movie_url + '"'
+    s = 'SELECT ratings.actor_pic_url, ratings.director_pic_url, ratings.director1 FROM ratings WHERE url == "' + movie_url + '"'
     r = c.execute(s)
     actor_url, director_url, director = r.fetchall()[0]
 
