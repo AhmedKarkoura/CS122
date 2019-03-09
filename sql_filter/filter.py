@@ -194,7 +194,7 @@ def find_movies(ui_dict):
         return ([], [])
 
     else:
-        connection = sqlite3.connect('test.db')
+        connection = sqlite3.connect('final_database.db')
         c = connection.cursor()
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
