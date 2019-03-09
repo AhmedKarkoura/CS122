@@ -43,18 +43,12 @@ STUDIOS = _build_dropdown(studios_lst)
 ORDER = _build_dropdown(order_by_lst)
 
 class SearchForm(forms.Form):
-
-    genre = forms.ChoiceField(label='Genre', choices=GENRES)
-    actor = forms.CharField(
-        label='Actor/Actress')
-    director = forms.CharField(
-        label='Director')
-    studio = forms.ChoiceField(label='Studio', choices=STUDIOS)
-    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS)
-
-    runtime = forms.IntegerField(label='Runtime')
-
-    show_args = forms.BooleanField(label='Show args_to_ui')
+    genre = forms.ChoiceField(label='Genre', choices=GENRES, required = False)
+    actor = forms.CharField(label='Actor/Actress', required = False)
+    director = forms.CharField(label='Director', required = False)
+    studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required = False)
+    rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required = False)
+    runtime = forms.IntegerField(label='Runtime', required = False)
 
 def home(request):
     context = {}
@@ -63,6 +57,7 @@ def home(request):
     #creating a form and populating it with data after the request is filled
     if request.method != 'GET':
         form = SearchForm()
+
     if request.method == 'GET':
         form = SearchForm(request.GET)
         if form.is_valid():
@@ -92,13 +87,12 @@ def home(request):
             if runtime:
                 args['runtime'] = runtime
 
-
-            if form.cleaned_data['show_args']:
-                context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
-
             try:
                 res = classify(args)
+
             except Exception as e:
+                if bool(args):
+                    res = 'All fields are required'
                 print('Exception caught')
 
    

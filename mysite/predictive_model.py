@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 #from sklearn.metrics import r2_score, roc_auc_score
 
 def setup():
-    matches = pd.read_csv('../sql_filter/database.csv')
+    matches = pd.read_csv('../sql_filter/old_csvs/database.csv')
 
     matches = matches.replace('\\N', '')
     matches = matches.replace([np.nan, 'nan', 'NaN'], -1)
