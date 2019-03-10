@@ -78,6 +78,7 @@ def scrape(movie_url, director = False):
         html = r.read()
         soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
+
         if soup.find('div', class_ = 'celebHeroImage'):
             director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
             director_url = director_url[:len(director_url) - 2]

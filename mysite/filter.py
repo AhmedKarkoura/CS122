@@ -123,19 +123,19 @@ def find_movies(ui_dict):
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
-        connection.create_function("format_genre", 1, format_genre)
-        connection.create_function("format_synop", 1, format_synop)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
         movies = r.fetchall() 
         connection.close()
+        print(movies)
         if len(movies) == 0:
             return ([],[])
         else:
             final = []
             for movie in movies:
                 url = movie[-1]
+                print(url)
                 movie = tuple(movie[:len(movie)-1])
                 movie += adp.get_person_posters(url)
                 final.append(movie)
