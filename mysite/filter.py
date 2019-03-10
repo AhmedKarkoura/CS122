@@ -5,18 +5,16 @@ import sqlite3
 from fuzzywuzzy import fuzz
 import actor_director_posters as adp
 
-HEADERS = ['title', 'genre1', 'genre2', 'genre3', 'director1', 'writer1',
-           'top3actors','critics_score', 'audience_score', 'box_office', 
-           'short_synop', 'runtime', 'mpaa', 'oscar_nomination_count', 
+HEADERS = ['title', 'genre1', 'director1','top3actors',
+           'critics_score', 'audience_score', 'box_office', 
+           'runtime', 'mpaa', 'oscar_nomination_count', 
            'poster_url', 'actor_pic_url', 'director_pic_url']
 
 SELECT = ["ratings.title", "ratings.genre1", 
-          "format_genre(ratings.genre2)", "format_genre(ratings.genre3)", 
-          "ratings.director1", "ratings.writer1", 
+          "ratings.director1", 
           "format_top3actors(ratings.top3actors)", 
           "ratings.critics_score", "ratings.audience_score", 
           "format_box_office(ratings.box_office)", 
-          "format_synop(ratings.short_synop)", 
           "ratings.runtime||' minutes'", "ratings.mpaa", 
           "ratings.oscar_nomination_count||' nominations'", 
           "ratings.poster_url", "ratings.url"]
