@@ -66,25 +66,13 @@ ORDER = _build_dropdown(order_by_lst)
 class SearchForm(forms.Form):
 
     genre = forms.ChoiceField(label='Genre', choices=GENRES, required=False)
-    actor = forms.CharField(
-        label='Actor/Actress',
-        help_text='e.g. Johnny Depp or  e.g. Johnny Depp,Ben Affleck',
-        required=False)
-    director = forms.CharField(
-        label='Director',
-        help_text='e.g. Christopher Nolan or e.g. Christopher Nolan, Ron Howard',
-        required=False)
+    actor = forms.CharField(label='Actor/Actress', required = False)
+    director = forms.CharField(label='Director', required=False)
     studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=False)
     rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=False)
-
-    runtime = forms.IntegerField(label='Runtime', 
-        help_text='Maximum duration of movie in minutes',
-        required=False)
+    runtime = forms.IntegerField(label='Runtime', required=False)
     order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=True)
     #ADD help_text about the order_by oscars
-
-    show_args = forms.BooleanField(label='Show args_to_ui',
-                                   required=False)
 
 
 def home(request):
@@ -127,9 +115,6 @@ def home(request):
 
             if order_by:
                 args['order_by'] = order_by
-
-            if form.cleaned_data['show_args']:
-                context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
 
             try:
                 res = find_movies(args)

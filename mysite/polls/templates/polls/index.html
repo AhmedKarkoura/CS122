@@ -1,66 +1,138 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'polls/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'polls/bootstrap.css' %}">
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Movie Recommendation</title>
-        <link rel="stylesheet" type="text/css" href="{% static '/main.css' %}" />
-    </head>
-    <body>
-        <div id="header">
-            <h1>Movie Recommendation</h1>
-        </div>
-        <div class="frame">
-            <form method="get">
-                {% csrf_token %}
-                <table class="form">
-                {{ form }}
-                </table>
-                <input type="submit" value="Submit" />
-            </form>
-        </div>
+<head>
+    <title>Movie Recommendations</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/bootstrap.css' %}" />
 
-        {% if args %}
-        <div class="args">
-            <pre>{{ args }}</pre>
+    <link rel="stylesheet" href="/bootstrap-themes/demo/css/styles.css?cache=94616">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Chicle|Open+Sans" rel="stylesheet">
+
+</head>
+<body class="ht-body ">
+    <div class="ht-tm-cat">
+      <div class="ht-tm-codeblock">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-danger ht-tm-element">
+          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">Project Big Screen</a>
+
+          <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav mr-auto mt-2 mt-md-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Home </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="#">Movie Recommendations <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../model">Be a Hollywood Exec! </a>
+              </li>
+            </ul>
+            <div>
+                <a href="https://github.com/AhmedKarkoura/CS122" class="ht-tm-element btn btn-dark">
+                  <span class="fab fa-github mr-2"></span>Git</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div> <!-- navigation -->
+
+        <div class="ht-main">
+        <div id="ht-tm-jumbotron">
+          <div class="jumbotron bg-dark text-white mb-0 radius-0 ht-tm-jumbotron">
+            <div class="container">
+              <div class="ht-tm-header">
+                <h1 class="display-1 text-chicle text-light text-center pb-5">Movie Recommendations</h1>
+              </div>
+            </div>
+            <div class="row">
+                <div class = "col-lg-6">
+                    <div class="frame">
+                        <form method="get">
+                            {% csrf_token %}
+                            <table class="form text-white col-lg-12">
+                            {{ form }}
+                            </table>
+                            <input type="submit" value="Submit" />
+                        </form>
+                    </div>
+
+                    {% if args %}
+                    <div class="args">
+                        <pre>{{ args }}</pre>
+                    </div>
+                    {% endif %}
+
+                    {% if err %}
+                    <div class="error">
+                        {{ err|safe }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class = 'col-lg-6'>
+                    <div class="ht-tm-codeblock ht-tm-btn">
+                      <div class="ht-tm-element card text-left">
+                        <div class="card-header text-white bg-danger">
+                          <b>Instructions</b>
+                        </div>
+                        <div class="card-body text-dark text-left">
+                          <p class="card-text"><em>Genre:</em> Choose from dropdown</p>
+                          <p class="card-text"><em>Actor/Actress:</em> Enter up to three comma separated names</p>
+                          <p class="card-text"><em>Director:</em> Enter up to two comma separated names</p>
+                          <p class="card-text"><em>Studio:</em> Choose from dropdown</p>
+                          <p class="card-text"><em>MPAA:</em> Choose from dropdown</p>
+                          <p class="card-text"><em>Runtime:</em> Enter the maximum duration of movie</p>
+                          <h4 class="card-title"><b>*</b>Order by is a required field</h4>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
-        {% endif %}
-
-        {% if err %}
-        <div class="error">
-            {{ err|safe }}
-        </div>
-        {% endif %}
+    </div>
 
 
-        <div class="frame">
-            {% if result != None %}
-            <div class="results">
-                <table id='mytable' class="movies">
+    <div class="frame">
+        {% if result != None %}
+        <div class="results ht-tm-codeblock">
+            <table id='mytable' class="table table-hover table-striped ht-tm-element">
+                <thead class = 'thead-dark'>
                     <tr>
                         {% for col in columns %}
                             {% if num_results != 0 %}
+                                {% if col != 'Short Synopsis' %}
                                 <th>{{ col }}</th>
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
                     </tr>
+                </thead>
+                <tbody>
                     {% for entry in result %}
                     <tr>
                         {% for col in entry %}
                             {% if 'https' in col %}
                                 <td><img src = {{ col }} width = '130'></td>
+                            {% elif col|length > 100 %}
+
                             {% else %} 
                                 <td>{{ col }}</td>
                             {% endif %}
                         {% endfor %}
                     </tr>
                     {% endfor %}
-                </table>
+                </tbody>
+            </table>
 
-            </div>
-            <p class="num_results">Number of results found: {{ num_results }}</p>
-            {% endif %}
         </div>
-    </body>
+        <p class="num_results">Number of results found: {{ num_results }}</p>
+        {% endif %}
+    </div>
+</body>
 </html>
