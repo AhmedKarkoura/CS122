@@ -71,7 +71,7 @@ class SearchForm(forms.Form):
     studio = forms.ChoiceField(label='Studio', choices=STUDIOS, required=False)
     rating = forms.ChoiceField(label='MPAA Rating', choices=RATINGS, required=False)
     runtime = forms.IntegerField(label='Runtime', required=False)
-    order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=True)
+    order_by = forms.ChoiceField(label='Order By', choices=ORDER, required=False)
     #ADD help_text about the order_by oscars
 
 
@@ -120,7 +120,11 @@ def home(request):
                 res = find_movies(args)
             except Exception as e:
                 print('Exception caught')
-                res = None
+                if args.get('order_by'):
+                    res = None
+
+                else:
+                    res = 'Please fill the order by field'
 
     if res is None:
         context['result'] = None

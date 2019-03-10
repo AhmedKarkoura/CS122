@@ -117,7 +117,11 @@
                     {% for entry in result %}
                     <tr>
                         {% for col in entry %}
-                            {% if 'https' in col %}
+                            {% if col == 'https://www.rottentomatoes.com/assets/pizza-pie/images/user_none.710c9ebd183.jpg' %}
+                                <td><img src = "{% static '/polls/images/miss_photo.jpg' %}" width = '130'></td>
+                            {% elif col == 'https://www.rottentomatoes.com/assets/pizza-pie/images/poster_default.c8c896e70c3.gif' %}
+                                <td><img src = "{% static '/polls/images/miss_photo.jpg' %}" width = '130'></td>
+                            {% elif 'https' in col %}
                                 <td><img src = {{ col }} width = '130'></td>
                             {% elif col|length > 100 %}
 
@@ -131,7 +135,6 @@
             </table>
 
         </div>
-        <p class="num_results">Number of results found: {{ num_results }}</p>
         {% endif %}
     </div>
 </body>
