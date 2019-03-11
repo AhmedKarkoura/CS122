@@ -108,7 +108,7 @@ def home(request):
                 args['studio'] = studio
 
             if rating:
-                args['mpaa'] = rating
+                args['rating'] = rating
 
             if runtime:
                 args['runtime'] = runtime

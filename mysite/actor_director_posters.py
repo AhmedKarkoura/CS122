@@ -80,7 +80,12 @@ def scrape(movie_url, director = False):
             if label.text.strip() == 'Directed By:':
                 break
 
-        url = 'https://www.rottentomatoes.com/' + actual.find('a')['href']
+
+        try:
+            url = 'https://www.rottentomatoes.com/' + actual.find('a')['href']
+
+        except Exception as e:
+            url = 'https://www.rottentomatoes.com/assets/pizza-pie/images/user_none.710c9ebd183.jpg'
 
         try:
             r = urllib.request.urlopen(url)

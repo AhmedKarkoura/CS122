@@ -140,6 +140,7 @@ def find_movies(ui_dict):
             final = []
             for movie in movies:
                 url = movie[-1]
+                print(url)
                 movie = tuple(movie[:len(movie)-1])
                 movie += adp.get_person_posters(url)
                 final.append(movie)
