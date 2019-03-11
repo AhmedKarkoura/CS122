@@ -5,12 +5,16 @@ import sqlite3
 from fuzzywuzzy import fuzz
 import actor_director_posters as adp
 
-HEADERS = ['title', 'genre1', 'director1','top3actors',
+HEADERS = ['title', 'genre1', 
+           #'genre2', 'genre3', 'short_synop', 'writer'
+           'director1','top3actors',
            'critics_score', 'audience_score', 'box_office', 
            'runtime', 'mpaa', 'oscar_nomination_count', 
            'poster_url', 'actor_pic_url', 'director_pic_url']
 
 SELECT = ["ratings.title", "ratings.genre1", 
+          #"format_genre(ratings.genre2)", "format_genre(ratings.genre3)",
+          #"format_synop(ratings.short_synop)", "ratings.writer",
           "ratings.director1", 
           "format_top3actors(ratings.top3actors)", 
           "ratings.critics_score", "ratings.audience_score", 
@@ -123,6 +127,8 @@ def find_movies(ui_dict):
         connection.create_function("fuzz", 2, fuzz.ratio)
         connection.create_function("format_box_office", 1, format_box_office)
         connection.create_function("format_top3actors", 1, format_top3actors)
+        #connection.create_function("format_synop", 1, format_synop)
+        #connection.create_function("format_genre", 1, format_genre)
         params = get_where_params(ui_dict)[1]
         query = get_query(ui_dict)
         r = c.execute(query, params)
