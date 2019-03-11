@@ -128,14 +128,12 @@ def find_movies(ui_dict):
         r = c.execute(query, params)
         movies = r.fetchall() 
         connection.close()
-        print(movies)
         if len(movies) == 0:
             return ([],[])
         else:
             final = []
             for movie in movies:
                 url = movie[-1]
-                print(url)
                 movie = tuple(movie[:len(movie)-1])
                 movie += adp.get_person_posters(url)
                 final.append(movie)
