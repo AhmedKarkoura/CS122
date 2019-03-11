@@ -74,20 +74,24 @@ def scrape(movie_url, director = False):
 
         url = 'https://www.rottentomatoes.com/' + actual.find('a')['href']
 
-        r = urllib.request.urlopen(url)
-        html = r.read()
-        soup = bs4.BeautifulSoup(html, features = 'html5lib')
+        try:
+            r = urllib.request.urlopen(url)
+            html = r.read()
+            soup = bs4.BeautifulSoup(html, features = 'html5lib')
 
 
-        if soup.find('div', class_ = 'celebHeroImage'):
-            director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
-            director_url = director_url[:len(director_url) - 2]
+            if soup.find('div', class_ = 'celebHeroImage'):
+                director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
+                director_url = director_url[:len(director_url) - 2]
 
-        else:
-            director_url = soup.find('img', class_ = 'posterImage js-lazyLoad').attrs['data-src']
+            else:
+                director_url = soup.find('img', class_ = 'posterImage js-lazyLoad').attrs['data-src']
 
-        if director_url[0] == '/':
-            director_url = 'https://www.rottentomatoes.com' + director_url
+            if director_url[0] == '/':
+                director_url = 'https://www.rottentomatoes.com' + director_url
+
+        except Exception as e:
+            director_url = 'https://www.rottentomatoes.com/assets/pizza-pie/images/user_none.710c9ebd183.jpg'
 
     else:
         director_url = ''

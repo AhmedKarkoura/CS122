@@ -142,9 +142,9 @@ def home(request):
         columns, result = res
        
         #if args['order_by'] == 'oscars_nominations':
-        columns = ['Title', 'Genre 1', 'Genre 2', 'Genre 3', 'Director',' Writer',
-        'Top 3 Actors', 'Critics Score (/10)', "Audience Score (/5)", 'Box Office', 
-        'Short Synopsis', 'Runtime', 'MPAA Rating','Oscar Nominations',
+        columns = ['Title', 'Primary Genre', 'Director',
+        'Top 3 Actors', 'Critics Score (/10)', 'Audience Score (/5)', 'Box Office', 
+        'Runtime', 'MPAA Rating','Oscar Nominations',
         'Movie Poster', 'Actor Poster', 'Director Poster']
             
         # else:
