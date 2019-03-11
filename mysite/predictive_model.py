@@ -9,7 +9,7 @@ import sqlite3
 from fuzzywuzzy import process
 
 from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 #from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -17,6 +17,10 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 #from sklearn.metrics import r2_score, roc_auc_score
 
 def setup():
+    '''
+    Reads ratings.csv and prepares training data. Trains random forest
+    regression model
+    '''
     matches = pd.read_csv('ratings.csv')
 
     matches = matches.replace('\\N', '')
@@ -31,10 +35,12 @@ def setup():
         axis = 1)
 
     for i in range(3):
-        matches['actor' + str(i+1)] = matches.top3actors.apply(lambda x: split_field(x, i, '/'))
+        matches['actor' + str(i+1)] = matches.top3actors.apply(
+            lambda x: split_field(x, i, '/'))
 
     matches = matches.drop(['top3actors'], axis = 1)
-    matches.box_office = matches.box_office.astype(str).apply(lambda x: x.replace('$', '').replace(',', '')).astype(int)
+    matches.box_office = matches.box_office.astype(str).apply(
+        lambda x: x.replace('$', '').replace(',', '')).astype(int)
 
     person_cols = ['actor1', 'actor2', 'actor3','director1', 'director2']
     other_cat_cols = ['mpaa', 'studio', 'genre1']
@@ -62,6 +68,9 @@ def setup():
     return matches, labelers, reg
 
 def split_field(l, i, splitter):
+    '''
+    Deals with comma separated names for actor and director
+    '''
     try:
         l = l.split(splitter)
         val = l[i]
@@ -71,6 +80,9 @@ def split_field(l, i, splitter):
     return val
 
 def classify(ui_dict):
+    '''
+    Returns dollar value for user inputs
+    '''
     matches, labelers, reg = setup()
 
     for i in range(3):
@@ -103,6 +115,9 @@ def classify(ui_dict):
     return '${:,.2f}'.format(prediction)
 
 def ensure_accuracy(row, labelers):
+    '''
+    Finds most likely actors and directors given inputs
+    '''
     check_row = row[4:]
     people = labelers.get('actor1').classes_
 
@@ -115,7 +130,7 @@ def ensure_accuracy(row, labelers):
     print(row)
     return row
 
-### NO LONGER NECESSARY###
+### NO LONGER NECESSARY ###
 def classifications():
     matches, labelers = setup()
 

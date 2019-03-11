@@ -56,6 +56,9 @@ def get_movie_links():
     return movie_dict
 
 def all_movies_page_csv(index_filename):
+    '''
+    Writes the result of get_movie_links to a csv
+    '''
     movie_dict = get_movie_links()
 
     with open(index_filename, 'w') as csvfile:
@@ -63,40 +66,45 @@ def all_movies_page_csv(index_filename):
 
         for movie_id, movie in movie_dict.items():
             writer.writerow([movie_id, '/'.join(movie.get('actors')), 
-                             movie.get('h_runtime'), movie.get('short_synopsis'),
-                             movie.get('title'), movie.get('relative_url'),
+                             movie.get('h_runtime'), 
+                             movie.get('short_synopsis'),
+                             movie.get('title'), 
+                             movie.get('relative_url'),
                              movie.get('poster_url')])
 
 def movie_level_data(index_filename, i = 0):
+    '''
+    Scrapes all movie level data using urls scraped from the all movies page
+    '''
     s = 'SELECT title, movie_id, url FROM all_page'
     db = sqlite3.connect('sql_db_files/rotten_tomatoes.db')
     
     c = db.cursor()
     r = c.execute(s)
 
-<<<<<<< HEAD
     urls = r.fetchall()[:i+1]
     urls = urls[::-1]
-=======
-    urls = r.fetchall()[i:]
->>>>>>> 9e6e789d640800d5134c0b61cf101a0287313a51
+
+    # Replace the above two lines with the below for forward scraping
+    # urls = r.fetchall()[i:]
 
     db.close()
 
     current_url = 'https://www.rottentomatoes.com/'
 
-    with open('movie_level_files/' + index_filename + '_' + str(i) + '.csv', 'w') as csvfile:
+    with open('movie_level_files/' + index_filename + '_' + str(i) + '.csv', 
+        'w') as csvfile:
+    
         writer = csv.writer(csvfile, delimiter = '|')
     
         for title, movie_id, url in urls:
             url = util.convert_if_relative_url(current_url, url)
         
             print(i, title, movie_id)
-<<<<<<< HEAD
+            
             i -= 1
-=======
-            i += 1
->>>>>>> 9e6e789d640800d5134c0b61cf101a0287313a51
+            # Replace the above for forward scraping
+            # i += 1
 
             r = url_request(index_filename, i, url)
             html = r.read()
@@ -138,6 +146,9 @@ def movie_level_data(index_filename, i = 0):
                              movie.get('num_users')])
 
 def data_collector(soup):
+    '''
+    Collects relevant details from a movie page given soup from movie_level_data
+    '''
     movie_info = {}
 
     movie_info['full_synop'] = soup.find_all('div', 
@@ -221,6 +232,10 @@ def data_collector(soup):
 N_MAX = 5
 
 def url_request(index_filename, i, url, n = 1):
+    '''
+    Function for retrying url requests in case of failure. If it fails to do so
+    5 times in a row then skips that movie.
+    '''
     try:
         r = urllib.request.urlopen(url)
 

@@ -1,8 +1,4 @@
-# Assume have movie_id for rotten tomatoes:
-# - Go to actor posters table:
-#     - If actor poster there, return url
-#     - Else: Find photo of first person in the actors, and return that poster url, as well as saving it in the db
-
+### Cache for actor_director_posters
 
 import sqlite3
 import urllib.request
@@ -10,10 +6,16 @@ import bs4
 import csv
 
 def get_person_posters(movie_url):
+    '''
+    Checks if the posters are currently in the database. 
+    Scrapes them if they are not
+    '''
     connection = sqlite3.connect('final_database.db')
     c = connection.cursor()
 
-    s = 'SELECT actor_pic_url, director_pic_url, director1 FROM ratings WHERE url == "' + movie_url + '"'
+    s = '''SELECT actor_pic_url, director_pic_url, director1 FROM ratings 
+        WHERE url == "''' + movie_url + '"'
+
     r = c.execute(s)
 
     actor_url, director_url, director = r.fetchall()[0]
@@ -41,9 +43,10 @@ def get_person_posters(movie_url):
         else:
             actor_url, _ = scrape(movie_url)
 
-        update_pics_query = "UPDATE ratings SET actor_pic_url = " + "'" + actor_url + "'" \
-                           ", director_pic_url = " + "'" + director_url + "'" + \
-                           ' WHERE ratings.url = ' + "'" + movie_url + "'"
+        update_pics_query = "UPDATE ratings SET actor_pic_url = " + "'" + \
+                            actor_url + "'" + ", director_pic_url = " + "'" + \
+                            director_url + "'" + ' WHERE ratings.url = ' + "'" +\
+                            movie_url + "'"
 
         c.execute(update_pics_query)
         connection.commit()
@@ -53,6 +56,11 @@ def get_person_posters(movie_url):
     return actor_url, director_url
 
 def scrape(movie_url, director = False):
+    '''
+    Always scrapes and actors' poster if not originally in the database
+    Scrapes director poster if director = True (necessary additional step
+    because it's an additional page to scrape)
+    '''
     r = urllib.request.urlopen('https://www.rottentomatoes.com' + movie_url)
     html = r.read()
     soup = bs4.BeautifulSoup(html, features = 'html5lib')
@@ -81,11 +89,14 @@ def scrape(movie_url, director = False):
 
 
             if soup.find('div', class_ = 'celebHeroImage'):
-                director_url = soup.find('div', class_ = 'celebHeroImage')['style'][22:]
+                director_url = soup.find('div', 
+                    class_ = 'celebHeroImage')['style'][22:]
+
                 director_url = director_url[:len(director_url) - 2]
 
             else:
-                director_url = soup.find('img', class_ = 'posterImage js-lazyLoad').attrs['data-src']
+                director_url = soup.find('img', 
+                    class_ = 'posterImage js-lazyLoad').attrs['data-src']
 
             if director_url[0] == '/':
                 director_url = 'https://www.rottentomatoes.com' + director_url
@@ -99,7 +110,7 @@ def scrape(movie_url, director = False):
     return actor_url, director_url
 
 
-### IGNORE EVERYTHING BELOW THIS LINE ###
+### IGNORE EVERYTHING BELOW THIS LINE - TEST CODE ###
 def get_picture_url(movie_url):
     actor_query = 'SELECT ratings.actor_pic_url FROM ratings WHERE ratings.url = ' + "'" + movie_url + "'"
     director_query = 'SELECT ratings.director_pic_url FROM ratings WHERE ratings.url = ' + "'" + movie_url + "'"
